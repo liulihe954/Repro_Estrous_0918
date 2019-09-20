@@ -48,7 +48,6 @@ for (i in seq_along(raw_data_all_index)){
 #######################################################################################
 # double looping
 TestingSubsetNames = names(total_genes_all)
-
 Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
                                          TestingSubsetNames,
@@ -60,4 +59,15 @@ Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
                                          TestingSubsetNames,
                                          GOthres = 0.01,
                                          keyword = "GO_Enrichment_qval01_pval001")
+#######################################################################################
+#                                   4. Join datatest                                 #
+#######################################################################################
+biomart="ensembl";dataset="btaurus_gene_ensembl";attributes = c("go_id","namespace_1003")
+database = useMart(biomart);genome = useDataset(dataset, mart = database);gene = getBM(attributes,mart = genome)
+namespace_index = dplyr::filter(gene,go_id != "",namespace_1003 != "")
 
+test_parse = Parse_GO_Results(GO_results_b[1]) 
+names(test_parse) = c("go_id","GO_Name","Total_Genes",
+                      "Significant_Genes","pvalue",
+                      "ExternalLoss_total","InternalLoss_sig","hitsPerc")
+test_pares_category = dplyr::inner_join(test_parse,namespace_index,by = "go_id")
