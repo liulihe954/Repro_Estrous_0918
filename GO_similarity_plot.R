@@ -1,14 +1,9 @@
 library(GOSemSim)
 library(corrplot)
 
-
 goList = # vector of significant GO terms
 goSimMat = mgoSim(goList, goList, ont="BP", measure="Jiang", combine=NULL)
 corrplot(goSimMat, tl.col = "black", tl.cex = 0.8, method = "shade", order = "hclust", hclust.method = "centroid", is.corr = FALSE)
-
-
-
-
 
 
 ##########
@@ -21,6 +16,10 @@ dim(gene); length(unique(gene$ensembl_gene_id)); length(unique(gene$go_id))
 goName = unique(gene[,c(3,4)])
 goName = goName[order(goName$go_id),]
 goName = goName[-1,]
+
+options("scipen"= -100, "digits"=4)
+xx = 0.00000000002
+xx
 
 
 GO = goName$go_id

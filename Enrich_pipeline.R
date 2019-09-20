@@ -3,6 +3,7 @@
 #######################################################################################
 rm(list = ls())
 source("Function_Source.R")
+options("scipen"= -100, "digits"=4)
 #######################################################################################
 #                                   1.PKG pre                                         #
 #######################################################################################
@@ -62,12 +63,62 @@ Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
 #######################################################################################
 #                                   4. Join datatest                                 #
 #######################################################################################
+# load results 
+load("GO_Enrichment_qval01_pval005.RData")
+GO_results_b_005 = GO_results_b
+enrich_summary = names(GO_results_b_005)
+
+# get the spavcename index 
 biomart="ensembl";dataset="btaurus_gene_ensembl";attributes = c("go_id","namespace_1003")
 database = useMart(biomart);genome = useDataset(dataset, mart = database);gene = getBM(attributes,mart = genome)
 namespace_index = dplyr::filter(gene,go_id != "",namespace_1003 != "")
 
-test_parse = Parse_GO_Results(GO_results_b[1]) 
-names(test_parse) = c("go_id","GO_Name","Total_Genes",
-                      "Significant_Genes","pvalue",
-                      "ExternalLoss_total","InternalLoss_sig","hitsPerc")
-test_pares_category = dplyr::inner_join(test_parse,namespace_index,by = "go_id")
+# parse 1 by 1, and attach the space name in the end
+compile_select_index = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","hitsPerc")
+### group 1
+#
+AR_CNTRL_enrich = Parse_GO_Results(GO_results_b_005[2])
+names(AR_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+AR_CNTRL_enrich = dplyr::select(AR_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
+#
+PRF_CNTRL_enrich = Parse_GO_Results(GO_results_b[3])
+names(PRF_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+PRF_CNTRL_enrich   = dplyr::select(PRF_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
+### group 2
+#
+FPM_CNTRL_enrich = Parse_GO_Results(GO_results_b[1])
+names(FPM_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+FPM_CNTRL_enrich = dplyr::select(FPM_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
+#
+SMP_CNTRL_enrich= Parse_GO_Results(GO_results_b[4])
+names(SMP_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+SMP_CNTRL_enrich = dplyr::select(SMP_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(SMP_CNTRL_enrich,namespace_index,by = "go_id")
+#
+SMP_FMP_enrich = Parse_GO_Results(GO_results_b[5])
+names(SMP_FMP_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+SMP_FMP_enrich =  dplyr::select(SMP_FMP_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
+
+#######################################################################################
+#                                   5. Compilation                                    #
+#######################################################################################
+#### group 1 - regression
+GO_Results_full_005_reg <-
+  dplyr::full_join(AR_CNTRL_enrich,PRF_CNTRL_enrich,by = c("go_id" = "go_id")) %>% 
+  tidyr::replace_na(list(go_id.x = "Not Found",go_id.y = "Not Found")) 
+GO_Results_inner_005_reg <-  
+  dplyr::inner_join(AR_CNTRL_enrich,PRF_CNTRL_enrich,by = c("go_id" = "go_id"))
+#### group 2 - pregnancy
+GO_Results_full_005_preg <-  
+  dplyr::full_join(FPM_CNTRL_enrich,SMP_CNTRL_enrich,by = c("go_id" = "go_id")) %>% 
+  dplyr::full_join(SMP_FMP_enrich,by = c("go_id" = "go_id"))%>% 
+  tidyr::replace_na(list(go_id.x = "Not Found",go_id.y = "Not Found",go_id = "Not Found")) 
+GO_Results_inner_005_preg <-  
+  dplyr::inner_join(FPM_CNTRL_enrich,SMP_CNTRL_enrich,by = c("go_id" = "go_id")) %>% 
+  dplyr::inner_join(SMP_FMP_enrich,by = c("go_id" = "go_id"))
+require(openxlsx)
+GO_Enrich_Regression_005 <- list("Full_join" = GO_Results_full_005_reg, "Inner_join" = GO_Results_inner_005_reg)
+write.xlsx(GO_Enrich_Regression_005,file = "GO_Enrich_Regression_005.xlsx")
+GO_Enrich_Pregnancy_005 <- list("Full_join" = GO_Results_full_005_preg, "Inner_join" = GO_Results_inner_005_preg)
+write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005.xlsx")
+
+
