@@ -1,6 +1,7 @@
 ########################################################################################
 #                                    0.Function pre                                   #
 #######################################################################################
+rm(list = ls())
 source("Function_Source.R")
 #######################################################################################
 #                                   1.PKG pre                                         #
@@ -24,9 +25,6 @@ for (i in seq_along(raw_data_all_index)){
   data_all_index[i] = (paste(substring(raw_data_all_index[i],1,nchar(raw_data_all_index[i])-4)))
 }
 
-
-###
-###            
 ###
 # create two containers for double looping, exhaust combanation of dataset - GO repo
 total_genes_all = list(FPM_CNTRL = c(),AR_CNTRL = c(),PRF_CNTRL = c(),SMP_CNTRL = c(),SMP_FMP = c())
@@ -43,6 +41,8 @@ for (i in seq_along(raw_data_all_index)){
   assign(data_all_index[i],tmp2)
 }
 
+
+
 # sig_genes_all[1];total_genes_all[1]
 # look into the compilaton; all good!
 #######################################################################################
@@ -50,14 +50,13 @@ for (i in seq_along(raw_data_all_index)){
 #######################################################################################
 # double looping
 TestingSubsetNames = names(total_genes_all)
-TestingSubsetNames
+TestingSubsetNames = TestingSubsetNames[2]
 
 Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
                                          TestingSubsetNames,
                                          GOthres = 0.05,
-                                         keyword = "GO_Enrichment_qval01_pval005")
-
+                                         keyword = "GO_Enrichment_qval01_pval005_test3")
 
 Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,

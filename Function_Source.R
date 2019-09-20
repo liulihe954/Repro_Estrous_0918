@@ -7,21 +7,19 @@ Go_Enrich_Plot = function(total.genes,
                           host="http://www.ensembl.org",
                           attributes = c("external_gene_name","go_id","name_1006"),
                           keyword = "GO_Enrichment_thres_point1_5sets"){
-  # 
   total_enrich = 0
   raw_pvalue_all = numeric()
   GO_results_b = list()
   GO_results_b_raw = list()
   library(ggplot2);library(biomaRt);library(gage);library(magrittr)# load pkg
   ## Analysis bosTau annotation: GO
-  database2 <- biomaRt::useMart(biomart=biomart,
-                                dataset=dataset,
-                                host=host)
-  gene2 <- getBM(attributes = attributes,
-                 mart = database2)
-  goName = unique(gene2[,c(2,3)]);goName = goName[order(goName$go_id),];goName = goName[-1,]
-  GO = goName$go_id;Name = goName$name_1006
-  genesGO = unique(subset(gene2,go_id != "")$external_gene_name)[-1];genesGO = unique(genesGO)
+  database = useMart(biomart)
+  genome = useDataset(dataset, mart = database)
+  gene = getBM(attributes,mart = genome)
+  goName = unique(gene[,c(2,3)]); goName = goName[order(goName$go_id),];goName = goName[-1,]
+  GO = goName$go_id
+  Name = goName$name_1006
+  genesGO = unique(subset(gene,go_id != "")$external_gene_name)[-1]
   #length(genesGO)
   message("Total Number of module/subsets to check: ",length(names(TestingSubsetNames)))
   message("Total Number of GO sets to check: ",length(GO)," with total number of names: ",length(Name))
@@ -46,7 +44,7 @@ Go_Enrich_Plot = function(total.genes,
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in 1:length(GO)){
       if (j%%100 == 0) {message("tryingd on GO ",j," - ",GO[j]," - ",Name[j])}
-      gENEs = subset(gene2, go_id == GO[i])$external_gene_name;gENEs = unique(gENEs) # all gene in target GO
+      gENEs = subset(gene, go_id == GO[j])$external_gene_name # all gene in target GO
       m = length(total.genes[total.genes %in% gENEs]) # genes from target GO and in our dataset
       s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target GO also in the non-preserved module
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
@@ -62,15 +60,14 @@ Go_Enrich_Plot = function(total.genes,
     # put all palues in a box
     raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
     # raw complilation starts
-    #ot_raw = subset(out,totalG > 4 & Pvalue < GOthres)
     final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("GOID","GO_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
-    final_raw = final_raw %>% top_n(dim(final_raw)[1], wt= -pvalue_r)%>%mutate(hitsPerc = Significant_Genes*100/Total_Genes)
-    GO_results_b_raw[[i]] = final_raw;names(GO_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched GO raw")
+    final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
+    GO_results_b_raw[[i]] = final_raw; names(GO_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched GO raw")
     # raw complilation ends
     # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
-    ot = subset(out,totalG > 4 & Pvalue < GOthres)
+    ot = subset(out,totalG > 4 & Pvalue <= GOthres)
     final = ot[order(ot$Pvalue),];colnames(final) = c("GOID","GO_Name", "Total_Genes", "Significant_Genes", "pvalue","ExternalLoss_total","InternalLoss_sig")
-    final = final %>% top_n(dim(final)[1], wt= -pvalue) %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
+    final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
     GO_results_b[[i]] = final;names(GO_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched GO")
     # selection ends
     message("Significant Enrichment Hits:",nrow(final))
