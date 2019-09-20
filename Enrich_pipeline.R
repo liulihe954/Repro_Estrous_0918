@@ -51,5 +51,5 @@ TestingSubsetNames
 Enrich_Results_thres1 = Go_Enrich_Plot(total_genes_all,
                                        sig_genes_all,
                                        TestingSubsetNames,
-                                       GOthres = 0.5,
+                                       GOthres = 0.05,
                                        keyword = "GO_Enrichment_thres_point1_5sets")
