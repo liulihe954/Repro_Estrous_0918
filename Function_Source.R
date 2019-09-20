@@ -21,7 +21,6 @@ Go_Enrich_Plot = function(total.genes,
                  mart = database2)
   goName = unique(gene2[,c(2,3)]);goName = goName[order(goName$go_id),];goName = goName[-1,]
   GO = goName$go_id;Name = goName$name_1006
-  GO = GO[1:500]
   genesGO = unique(subset(gene2,go_id != "")$external_gene_name)[-1];genesGO = unique(genesGO)
   #length(genesGO)
   message("Total Number of module/subsets to check: ",length(names(TestingSubsetNames)))
