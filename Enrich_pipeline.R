@@ -20,7 +20,7 @@ raw_data_all_index = c("FPM_CNTRL_raw","AR_CNTRL_raw","PRF_CNTRL_raw","SMP_CNTRL
 # data pre 2 : selection
 # massage names for continuty
 data_all_index = character() # will be containing data - all "OK" and "qval <= .1"
-for (i in seq_along(raw_data_all)){
+for (i in seq_along(raw_data_all_index)){
   data_all_index[i] = (paste(substring(raw_data_all_index[i],1,nchar(raw_data_all_index[i])-4)))
 }
 # create two containers for double looping, exhaust combanation of dataset - GO repo
