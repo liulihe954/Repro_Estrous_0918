@@ -41,8 +41,6 @@ for (i in seq_along(raw_data_all_index)){
   assign(data_all_index[i],tmp2)
 }
 
-
-
 # sig_genes_all[1];total_genes_all[1]
 # look into the compilaton; all good!
 #######################################################################################
@@ -50,7 +48,6 @@ for (i in seq_along(raw_data_all_index)){
 #######################################################################################
 # double looping
 TestingSubsetNames = names(total_genes_all)
-TestingSubsetNames = TestingSubsetNames[2]
 
 Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
