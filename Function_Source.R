@@ -22,6 +22,7 @@ Go_Enrich_Plot = function(total.genes,
   gene = getBM(attributes,mart = genome)
   goName = unique(gene[,c(2,3)]); goName = goName[order(goName$go_id),];goName = goName[-1,]
   GO = goName$go_id
+  GO = G[1:2000]
   Name = goName$name_1006
   genesGO = unique(subset(gene,go_id != "")$external_gene_name)[-1]
   #length(genesGO)
@@ -52,7 +53,7 @@ Go_Enrich_Plot = function(total.genes,
       m = length(total.genes[total.genes %in% gENEs]) # genes from target GO and in our dataset
       s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target GO also in the non-preserved module
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
-      Pval = fisher.test(M, alternative ="g")$p.value
+      Pval = round(fisher.test(M, alternative ="g")$p.value,10)
       tmp = data.frame(GO = GO[j], 
                        Name = Name[j], 
                        totalG = m, 
@@ -106,6 +107,7 @@ Go_Enrich_Plot = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",GOthres)
   message("Nice! - GO enrichment finished and data saved")}
+
 ##############################################################################################################
 Parse__Results = function(KEGG_results_b){
   all_enrich_KEGG = data.frame(ID=character(),
