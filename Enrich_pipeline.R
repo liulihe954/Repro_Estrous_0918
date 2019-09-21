@@ -48,7 +48,6 @@ for (i in seq_along(raw_data_all_index)){
 #######################################################################################
 # double looping
 TestingSubsetNames = names(total_genes_all)
-TestingSubsetNames = TestingSubsetNames[1]
 Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
                                          TestingSubsetNames,
@@ -120,5 +119,3 @@ GO_Enrich_Regression_005 <- list("Full_join" = GO_Results_full_005_reg, "Inner_j
 write.xlsx(GO_Enrich_Regression_005,file = "GO_Enrich_Regression_005.xlsx")
 GO_Enrich_Pregnancy_005 <- list("Full_join" = GO_Results_full_005_preg, "Inner_join" = GO_Results_inner_005_preg)
 write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005.xlsx")
-
-
