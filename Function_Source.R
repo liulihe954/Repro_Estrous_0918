@@ -1,3 +1,7 @@
+##############################################################################################################
+library(readxl);library(ggplot2);library(biomaRt);library(tidyverse)
+library(biomaRt);library(GOSemSim);library(corrplot)
+##############################################################################################################
 Go_Enrich_Plot = function(total.genes,
                           sig.genes,
                           TestingSubsetNames,
@@ -102,9 +106,7 @@ Go_Enrich_Plot = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",GOthres)
   message("Nice! - GO enrichment finished and data saved")}
-
-
-
+##############################################################################################################
 Parse__Results = function(KEGG_results_b){
   all_enrich_KEGG = data.frame(ID=character(),
                                Description=character(),

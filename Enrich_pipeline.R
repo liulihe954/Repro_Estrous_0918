@@ -1,14 +1,13 @@
 ########################################################################################
 #                                    0.Function pre                                   #
 #######################################################################################
-rm(list = ls())
+#rm(list = ls())
 source("Function_Source.R")
 #options("scipen"= -100, "digits"=4)
 #######################################################################################
 #                                   1.PKG pre                                         #
 #######################################################################################
-library(readxl);library(ggplot2);library(biomaRt);library(tidyverse)
-library(biomaRt)
+# Included in Function Source
 #######################################################################################
 #                                  2.Over represent                                   #
 #######################################################################################
@@ -45,21 +44,22 @@ for (i in seq_along(raw_data_all_index)){
 # sig_genes_all[1];total_genes_all[1]
 # look into the compilaton; all good!
 #######################################################################################
-#                                   3. Run test                                       #
+#                                   3. Run analysis - double loop                     #
 #######################################################################################
 # double looping
 TestingSubsetNames = names(total_genes_all)
+TestingSubsetNames = TestingSubsetNames[1]
 Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
                                          TestingSubsetNames,
                                          GOthres = 0.05,
-                                         keyword = "GO_Enrichment_qval01_pval005_test3")
+                                         keyword = "GO_Enrichment_qval01_pval005_0920")
 
-Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
-                                         sig_genes_all,
-                                         TestingSubsetNames,
-                                         GOthres = 0.01,
-                                         keyword = "GO_Enrichment_qval01_pval001")
+#Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
+#                                         sig_genes_all,
+#                                         TestingSubsetNames,
+#                                         GOthres = 0.01,
+#                                         keyword = "GO_Enrichment_qval01_pval001")
 #######################################################################################
 #                                   4. Join datatest                                 #
 #######################################################################################
