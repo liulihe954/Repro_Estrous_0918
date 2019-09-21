@@ -2,7 +2,7 @@
 #                                    0.Function pre                                   #
 #######################################################################################
 #rm(list = ls())
-#source("Function_Source.R")
+source("Function_Source.R")
 #options("scipen"= -100, "digits"=4)
 #######################################################################################
 #                                   1.PKG pre                                         #
@@ -40,7 +40,6 @@ for (i in seq_along(raw_data_all_index)){
   sig_genes_all[[i]] = dplyr::select(tmp2,gene)
   assign(data_all_index[i],tmp2)
 }
-
 # sig_genes_all[1];total_genes_all[1]
 # look into the compilaton; all good!
 #######################################################################################
@@ -48,13 +47,11 @@ for (i in seq_along(raw_data_all_index)){
 #######################################################################################
 # double looping
 TestingSubsetNames = names(total_genes_all)
-TestingSubsetNames = TestingSubsetNames[1]
 Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
                                          TestingSubsetNames,
                                          GOthres = 0.05,
-                                         keyword = "GO_Enrichment_qval01_pval005_0920_LOCAL_TEST")
-
+                                         keyword = "GO_Enrichment_qval01_pval005_0921")
 #Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
 #                                         sig_genes_all,
 #                                         TestingSubsetNames,
@@ -65,9 +62,6 @@ Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
 #######################################################################################
 # load results 
 load("GO_Enrichment_qval01_pval005.RData")
-GO_results_b_005 = GO_results_b
-enrich_summary = names(GO_results_b_005)
-
 # get the spavcename index 
 biomart="ensembl";dataset="btaurus_gene_ensembl";attributes = c("go_id","namespace_1003")
 database = useMart(biomart);genome = useDataset(dataset, mart = database);gene = getBM(attributes,mart = genome)
@@ -117,6 +111,6 @@ GO_Results_inner_005_preg <-
   dplyr::inner_join(SMP_FMP_enrich,by = c("go_id" = "go_id"))
 require(openxlsx)
 GO_Enrich_Regression_005 <- list("Full_join" = GO_Results_full_005_reg, "Inner_join" = GO_Results_inner_005_reg)
-write.xlsx(GO_Enrich_Regression_005,file = "GO_Enrich_Regression_005.xlsx")
+write.xlsx(GO_Enrich_Regression_005,file = "GO_Enrich_Regression_005_0921.xlsx")
 GO_Enrich_Pregnancy_005 <- list("Full_join" = GO_Results_full_005_preg, "Inner_join" = GO_Results_inner_005_preg)
-write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005.xlsx")
+write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005_0921.xlsx")
