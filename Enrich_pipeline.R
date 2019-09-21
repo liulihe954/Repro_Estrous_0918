@@ -71,7 +71,7 @@ namespace_index = dplyr::filter(gene,go_id != "",namespace_1003 != "")
 compile_select_index = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","hitsPerc")
 ### group 1
 #
-AR_CNTRL_enrich = Parse_GO_Results(GO_results_b_005[2])
+AR_CNTRL_enrich = Parse_GO_Results(GO_results_b[2])
 names(AR_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
 AR_CNTRL_enrich = dplyr::select(AR_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 #
