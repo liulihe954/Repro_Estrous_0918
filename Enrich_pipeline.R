@@ -61,7 +61,7 @@ Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
 #                                   4. Join datatest                                 #
 #######################################################################################
 # load results 
-load("GO_Enrichment_qval01_pval005.RData")
+load("GO_Enrichment_qval01_pval005_0921.RData")
 # get the spavcename index 
 biomart="ensembl";dataset="btaurus_gene_ensembl";attributes = c("go_id","namespace_1003")
 database = useMart(biomart);genome = useDataset(dataset, mart = database);gene = getBM(attributes,mart = genome)
