@@ -52,7 +52,7 @@ Go_Enrich_Plot = function(total.genes,
       m = length(total.genes[total.genes %in% gENEs]) # genes from target GO and in our dataset
       s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target GO also in the non-preserved module
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
-      Pval = round(fisher.test(M, alternative ="g")$p.value,10)
+      Pval = round(fisher.test(M, alternative ="g")$p.value,100)
       tmp = data.frame(GO = GO[j], 
                        Name = Name[j], 
                        totalG = m, 
