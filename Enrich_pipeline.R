@@ -51,12 +51,8 @@ Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
                                          sig_genes_all,
                                          TestingSubsetNames,
                                          GOthres = 0.05,
-                                         keyword = "GO_Enrichment_qval01_pval005_0921")
-#Enrich_Results_thres001 = Go_Enrich_Plot(total_genes_all,
-#                                         sig_genes_all,
-#                                         TestingSubsetNames,
-#                                         GOthres = 0.01,
-#                                         keyword = "GO_Enrichment_qval01_pval001")
+                                         keyword = "GO_Enrichment_qval01_pval005_test0924")
+
 #######################################################################################
 #                                   4. Join datatest                                 #
 #######################################################################################

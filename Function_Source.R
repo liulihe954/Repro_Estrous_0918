@@ -25,7 +25,7 @@ Go_Enrich_Plot = function(total.genes,
   Name = goName$name_1006
   genesGO = unique(subset(gene,go_id != "")$external_gene_name)[-1]
   #length(genesGO)
-  message("Total Number of module/subsets to check: ",length(names(TestingSubsetNames)))
+  message("Total Number of module/subsets to check: ",length(TestingSubsetNames))
   message("Total Number of GO sets to check: ",length(GO)," with total number of names: ",length(Name))
   # plot
   #pdf(paste(trimws(keyword),".pdf",sep = ""))
