@@ -57,7 +57,9 @@ Enrich_Results_thres005 = Go_Enrich_Plot(total_genes_all,
 #                                   4. Join datatest                                 #
 #######################################################################################
 # load results 
+#list.files()
 load("GO_Enrichment_qval01_pval005_0921.RData")
+
 # get the spavcename index 
 biomart="ensembl";dataset="btaurus_gene_ensembl";attributes = c("go_id","namespace_1003")
 database = useMart(biomart);genome = useDataset(dataset, mart = database);gene = getBM(attributes,mart = genome)
@@ -82,7 +84,7 @@ FPM_CNTRL_enrich = dplyr::select(FPM_CNTRL_enrich,compile_select_index) %>% dply
 #
 SMP_CNTRL_enrich= Parse_GO_Results(GO_results_b[4])
 names(SMP_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
-SMP_CNTRL_enrich = dplyr::select(SMP_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(SMP_CNTRL_enrich,namespace_index,by = "go_id")
+SMP_CNTRL_enrich = dplyr::select(SMP_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 #
 SMP_FMP_enrich = Parse_GO_Results(GO_results_b[5])
 names(SMP_FMP_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
@@ -110,3 +112,146 @@ GO_Enrich_Regression_005 <- list("Full_join" = GO_Results_full_005_reg, "Inner_j
 write.xlsx(GO_Enrich_Regression_005,file = "GO_Enrich_Regression_005_0921.xlsx")
 GO_Enrich_Pregnancy_005 <- list("Full_join" = GO_Results_full_005_preg, "Inner_join" = GO_Results_inner_005_preg)
 write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005_0921.xlsx")
+
+
+#######################################################################################
+#                           6.Take 0.01 - be more strengent                           #
+#######################################################################################
+library("org.Bt.eg.db")
+semData_BP <- godata('org.Bt.eg.db', ont="BP", computeIC=T) #ont="BP"
+semData_MF <- godata('org.Bt.eg.db', ont="MF", computeIC=T) #ont="BP"
+semData_CC <- godata('org.Bt.eg.db', ont="CC", computeIC=T) #ont="BP"
+
+
+#AR_CNTRL - 0.01
+AR_CNTRL_enrich_BP_List = dplyr::filter(AR_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(AR_CNTRL_enrich_BP_List) = NULL
+AR_CNTRL_enrich_CC_List = dplyr::filter(AR_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(AR_CNTRL_enrich_CC_List) = NULL
+AR_CNTRL_enrich_MF_List = dplyr::filter(AR_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(AR_CNTRL_enrich_MF_List) = NULL
+
+# PRF_CNTRL - 0.01
+PRF_CNTRL_enrich_BP_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_BP_List) = NULL
+PRF_CNTRL_enrich_CC_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_CC_List) = NULL
+PRF_CNTRL_enrich_MF_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_MF_List) = NULL
+
+# - 0.05 / 0.01
+FPM_CNTRL_enrich_BP_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_BP_List) = NULL
+FPM_CNTRL_enrich_CC_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_CC_List) = NULL
+FPM_CNTRL_enrich_MF_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_MF_List) = NULL
+
+#
+SMP_CNTRL_enrich_BP_List = dplyr::filter(SMP_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(SMP_CNTRL_enrich_BP_List) = NULL
+SMP_CNTRL_enrich_CC_List = dplyr::filter(SMP_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(SMP_CNTRL_enrich_CC_List) = NULL
+SMP_CNTRL_enrich_MF_List = dplyr::filter(SMP_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(SMP_CNTRL_enrich_MF_List) = NULL
+
+#
+SMP_FMP_enrich_BP_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(SMP_FMP_enrich_BP_List) = NULL
+SMP_FMP_enrich_CC_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(SMP_FMP_enrich_CC_List) = NULL
+SMP_FMP_enrich_MF_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(SMP_FMP_enrich_MF_List) = NULL
+
+
+
+
+# Function takes
+ReduceDim_Go_Plot = function(Enrich_Out,GOthres,Database = "org.Bt.eg.db",measure="Jiang",combine=NULL){
+  library(GOSemSim);library(corrplot);library(Database);library(tidyverse)
+  semData_BP <- godata(Database, ont="BP", computeIC=T)
+  semData_MF <- godata(Database, ont="MF", computeIC=T)
+  semData_CC <- godata(Database, ont="CC", computeIC=T)
+  BP_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "biological_process") %>% 
+    dplyr::select(go_id) %>% unlist();attributes(BP_List) = NULL
+  CC_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "cellular_component") %>% 
+    dplyr::select(go_id) %>% unlist();attributes(CC_Listt) = NULL
+  MF_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "molecular_function") %>% 
+    dplyr::select(go_id) %>% unlist();attributes(MF_List) = NULL
+  
+  goSimMatrix_BP = GOSemSim::mgoSim(BP_List,BP_List,semData=semData_BP,measure=measure,combine = combine)
+  goSimMatrix_CC = GOSemSim::mgoSim(CC_List,CC_List,semData=semData_MF,measure=measure,combine = combine)
+  goSimMatrix_MF = GOSemSim::mgoSim(BP_List,BP_List,semData=semData_CC,measure=measure,combine = combine)
+  
+  
+  
+}
+
+
+
+paste(AR_CNTRL_enrich_BP_List,AR_CNTRL_enrich$GO_Name[(AR_CNTRL_enrich$go_id %in% AR_CNTRL_enrich_BP_List)])
+
+library(GOSemSim);library(corrplot)
+goSimMat_AR_CNTRL_BP = GOSemSim::mgoSim(AR_CNTRL_enrich_BP_List,
+                              AR_CNTRL_enrich_BP_List,
+                              semData=semData_BP,
+                              measure="Jiang", combine=NULL) # combind why use null?
+suspectID = rownames(goSimMat_AR_CNTRL_BP)[is.na(goSimMat_AR_CNTRL_BP[,1])]
+suspectID
+  if (length(suspectID) != 0){AR_CNTRL_enrich_BP_List_new = AR_CNTRL_enrich_BP_List[-which(AR_CNTRL_enrich_BP_List == suspectID)]
+  } else {AR_CNTRL_enrich_BP_List_new = AR_CNTRL_enrich_BP_List}
+goSimMat_test_new = mgoSim(AR_CNTRL_enrich_BP_List_new,
+                           AR_CNTRL_enrich_BP_List_new,
+                           semData=semData_BP,
+                           measure="Jiang", combine=NULL) # combind why use null?
+colnames(goSimMat_test_new) = paste(AR_CNTRL_enrich_BP_List,AR_CNTRL_enrich$GO_Name[(AR_CNTRL_enrich$go_id %in% AR_CNTRL_enrich_BP_List)])
+rownames(goSimMat_test_new) = paste(AR_CNTRL_enrich$GO_Name[(AR_CNTRL_enrich$go_id %in% AR_CNTRL_enrich_BP_List)],AR_CNTRL_enrich_BP_List)
+x = corrplot(goSimMat_test_new,tl.col = "black", tl.cex = 0.4, 
+             method = "shade", order = "hclust", 
+             hclust.method = "centroid", is.corr = FALSE)
+
+x
+
+
+
+dev.off()
+write(labels,"labels_AR_CONTROL_BP_0.01.csv")
+
+
+
+colnames(M) <- c("a", "set", "of", "x", "labels", 1:6)
+corrplot(M, method = "color")
+
+?corrplot()
+
+
+goSimMat_test[rownames(goSimMat_test) == "GO:0120162",]
+
+1] "GO:0033089" "GO:0032534"
+[3] "GO:0070120" "GO:0048843"
+[5] "GO:1905606" "GO:0120162"
+
+
+
+
+
+select(org.Bt.eg.db,keys ="GO:1905606",keytype = "GO","ENTREZID" )
+
+
+view(goSimMat_test)
+
+view(goSimMat_test)
+goSimMat_test2 = mgoSim(list,
+                        list,
+                        semData=semData_BP,
+                        measure="Jiang", combine=NULL) # combind why use null?
+dev.off()
+x = corrplot(goSimMat_test2, tl.col = "black", tl.cex = 0.8, 
+             method = "shade", order = "hclust", 
+             hclust.method = "centroid", is.corr = FALSE)
+
+
+
+
+
+
