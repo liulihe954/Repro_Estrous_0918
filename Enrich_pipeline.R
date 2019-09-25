@@ -116,8 +116,21 @@ write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005_0921.xlsx")
 #######################################################################################
 #                           6.Take 0.01 - be more strengent                           #
 #######################################################################################
-# Function takes Enrichment table as imput (same format as "AR_CNTRL_enrich", for example, like the one above)
-# now plot
+# This is for test pval, to see how many you'll get at which pval; change groups/thres first
+Enrich_Out = FPM_CNTRL# choices: "FPM_CNTRL" "AR_CNTRL"  "PRF_CNTRL" "SMP_CNTRL" "SMP_FMP" 
+GOthres_testp = 0.005
+BP_List = dplyr::filter(Enrich_Out,pvalue<=GOthres_testp & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(BP_List) = NULL 
+CC_List = dplyr::filter(Enrich_Out,pvalue<=GOthres_testp & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(CC_List) = NULL
+MF_List = dplyr::filter(Enrich_Out,pvalue<=GOthres_testp & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(MF_List) = NULL
+message(" BP: ",length(BP_List)," CC: ",length(CC_List)," MF: ",length(MF_List))
+
+
+
+# Function takes Enrichment table as imput (same format as "AR_CNTRL_enrich")
+#####
 ReduceDim_GO_Plot(AR_CNTRL_enrich,GOthres = 0.001, Dataset_Name = "AR_CNTRL_enrich")
 ReduceDim_GO_Plot(PRF_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "PRF_CNTRL_enrich")
 ReduceDim_GO_Plot(FPM_CNTRL_enrich,GOthres = 0.01,Dataset_Name = "FPM_CNTRL_enrich")
