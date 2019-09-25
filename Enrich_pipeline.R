@@ -203,8 +203,8 @@ ReduceDim_GO_Plot = function(Enrich_Out,
 }
 
 # now plot
-ReduceDim_GO_Plot(AR_CNTRL_enrich,Dataset_Name = "AR_CNTRL_enrich")
-ReduceDim_GO_Plot(PRF_CNTRL_enrich,Dataset_Name = "PRF_CNTRL_enrich")
-ReduceDim_GO_Plot(FPM_CNTRL_enrich,Dataset_Name = "FPM_CNTRL_enrich")
-ReduceDim_GO_Plot(SMP_CNTRL_enrichh,Dataset_Name = "SMP_CNTRL_enrich")
-ReduceDim_GO_Plot(SMP_FMP_enrich,Dataset_Name = "SMP_FMP_enrich")
+ReduceDim_GO_Plot(AR_CNTRL_enrich,GOthres = 0.001, Dataset_Name = "AR_CNTRL_enrich")
+ReduceDim_GO_Plot(PRF_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "PRF_CNTRL_enrich")
+ReduceDim_GO_Plot(FPM_CNTRL_enrich,GOthres = 0.01,Dataset_Name = "FPM_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_CNTRL_enrichh,GOthres = 0.001,Dataset_Name = "SMP_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_FMP_enrich,GOthres = 0.001,Dataset_Name = "SMP_FMP_enrich")
