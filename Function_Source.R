@@ -192,9 +192,17 @@ ReduceDim_GO_Plot = function(Enrich_Out,
           dim(goSimMatrix_BP_new)[1],",",
           dim(goSimMatrix_MF_new)[1]," GOs ploted in CC, BP and MF, respectively",
           ", cutting at, ",GOthres)
+  require(openxlsx)
+  CorMatrix <- list("CorMat_BP" = data.frame(goSimMatrix_BP), 
+                    "CorMat_CC" = data.frame(goSimMatrix_CC),
+                    "CorMat_MF" = data.frame(goSimMatrix_MF))
+  write.xlsx(CorMatrix, row.names=TRUE,
+             file = paste("Semantic_Similarity_Measure_",
+                                     Dataset_Name,"_",
+                          formatC(GOthres, format = "e", digits = 0),".xlsx",sep = ""))
   save(goSimMatrix_CC,goSimMatrix_BP,goSimMatrix_MF,
        file = paste("Semantic_Similarity_Measure_",Dataset_Name,"_",formatC(GOthres, format = "e", digits = 0),".RData",sep = ""))
-  message("Nice! plot exported and RData saved!")
+  message("Nice! Excels, Plots exported and RData saved!")
 }
 #########################################################################################################################
 #########################################################################################################################
