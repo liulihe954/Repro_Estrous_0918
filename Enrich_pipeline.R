@@ -141,12 +141,13 @@ ReduceDim_GO_Plot = function(Enrich_Out,
     dplyr::select(go_id) %>% unlist();attributes(MF_List) = NULL
   ### Now we are trying to get all similarity matrix ready. N x N, symetric, diag = 1
   # For BP
+  
   goSimMatrix_BP = GOSemSim::mgoSim(BP_List,
                                     BP_List,
                                     semData=semData_BP,measure=measure,combine = combine)
   suspectID_BP = rownames(goSimMatrix_BP)[is.na(goSimMatrix_BP[,1])]
-  if (length(suspectID_BP) != 0){BP_List_new = BP_List[-which(BP_List == suspectID)]
-  message(length(suspectID_BP)," invalid ID captured in BP: ",suspectID_BP)
+  if (length(suspectID_BP) != 0){BP_List_new = setdiff(BP_List,suspectID_BP)
+  message(length(suspectID_BP)," invalid ID captured in BP: ",suspectID_BP,"thus been removed!")
   } else {BP_List_new = BP_List;message("Nice! All IDs are valid in BP!")}
   goSimMatrix_BP_new = GOSemSim::mgoSim(BP_List_new,
                                         BP_List_new,
@@ -158,8 +159,8 @@ ReduceDim_GO_Plot = function(Enrich_Out,
                                     CC_List,
                                     semData=semData_CC,measure=measure,combine = combine)
   suspectID_CC = rownames(goSimMatrix_CC)[is.na(goSimMatrix_CC[,1])]
-  if (length(suspectID_CC) != 0){CC_List_new = CC_List[-which(CC_List == suspectID_CC)]
-  message(length(suspectID_CC)," invalid ID captured in CC: ",suspectID_CC)
+  if (length(suspectID_CC) != 0){CC_List_new = setdiff(CC_List,suspectID_CC)
+  message(length(suspectID_CC)," invalid ID captured in CC: ",suspectID_CC,"thus been removed!")
   } else {CC_List_new = CC_List;message("Nice! All IDs are valid in CC!")}
   goSimMatrix_CC_new = GOSemSim::mgoSim(CC_List_new,
                                         CC_List_new,
@@ -171,8 +172,8 @@ ReduceDim_GO_Plot = function(Enrich_Out,
                                     MF_List,
                                     semData=semData_MF,measure=measure,combine = combine)
   suspectID_MF = rownames(goSimMatrix_MF)[is.na(goSimMatrix_MF[,1])]
-  if (length(suspectID_MF) != 0){MF_List_new = MF_List[-which(MF_List == suspectID_MF)]
-  message(length(suspectID_MF)," invalid ID captured in MF: ",suspectID_MF)
+  if (length(suspectID_MF) != 0){MF_List_new = setdiff(MF_List,suspectID_MF)
+  message(length(suspectID_MF)," invalid ID captured in MF: ",suspectID_MF,"thus been removed!")
   } else {MF_List_new = MF_List;message("Nice! All IDs are valid in MF!")}
   goSimMatrix_MF_new = GOSemSim::mgoSim(MF_List_new,
                                         MF_List_new,
@@ -206,5 +207,5 @@ ReduceDim_GO_Plot = function(Enrich_Out,
 ReduceDim_GO_Plot(AR_CNTRL_enrich,GOthres = 0.001, Dataset_Name = "AR_CNTRL_enrich")
 ReduceDim_GO_Plot(PRF_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "PRF_CNTRL_enrich")
 ReduceDim_GO_Plot(FPM_CNTRL_enrich,GOthres = 0.01,Dataset_Name = "FPM_CNTRL_enrich")
-ReduceDim_GO_Plot(SMP_CNTRL_enrichh,GOthres = 0.001,Dataset_Name = "SMP_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "SMP_CNTRL_enrich")
 ReduceDim_GO_Plot(SMP_FMP_enrich,GOthres = 0.001,Dataset_Name = "SMP_FMP_enrich")
