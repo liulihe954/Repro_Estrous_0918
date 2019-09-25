@@ -113,188 +113,98 @@ write.xlsx(GO_Enrich_Regression_005,file = "GO_Enrich_Regression_005_0921.xlsx")
 GO_Enrich_Pregnancy_005 <- list("Full_join" = GO_Results_full_005_preg, "Inner_join" = GO_Results_inner_005_preg)
 write.xlsx(GO_Enrich_Pregnancy_005,file = "GO_Enrich_Pregnancy_005_0921.xlsx")
 
-
 #######################################################################################
 #                           6.Take 0.01 - be more strengent                           #
 #######################################################################################
-library("org.Bt.eg.db")
-semData_BP <- godata('org.Bt.eg.db', ont="BP", computeIC=T) #ont="BP"
-semData_MF <- godata('org.Bt.eg.db', ont="MF", computeIC=T) #ont="BP"
-semData_CC <- godata('org.Bt.eg.db', ont="CC", computeIC=T) #ont="BP"
-
-
-#AR_CNTRL - 0.01
-AR_CNTRL_enrich_BP_List = dplyr::filter(AR_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(AR_CNTRL_enrich_BP_List) = NULL
-AR_CNTRL_enrich_CC_List = dplyr::filter(AR_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(AR_CNTRL_enrich_CC_List) = NULL
-AR_CNTRL_enrich_MF_List = dplyr::filter(AR_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(AR_CNTRL_enrich_MF_List) = NULL
-
-# PRF_CNTRL - 0.01
-PRF_CNTRL_enrich_BP_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_BP_List) = NULL
-PRF_CNTRL_enrich_CC_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_CC_List) = NULL
-PRF_CNTRL_enrich_MF_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_MF_List) = NULL
-
-
-# - 0.05 / 0.01
-FPM_CNTRL_enrich_BP_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "biological_process") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_BP_List) = NULL
-FPM_CNTRL_enrich_CC_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "cellular_component") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_CC_List) = NULL
-FPM_CNTRL_enrich_MF_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "molecular_function") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_MF_List) = NULL
-
-#
-SMP_CNTRL_enrich_BP_List = dplyr::filter(SMP_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(SMP_CNTRL_enrich_BP_List) = NULL
-SMP_CNTRL_enrich_CC_List = dplyr::filter(SMP_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(SMP_CNTRL_enrich_CC_List) = NULL
-SMP_CNTRL_enrich_MF_List = dplyr::filter(SMP_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(SMP_CNTRL_enrich_MF_List) = NULL
-
-#
-SMP_FMP_enrich_BP_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(SMP_FMP_enrich_BP_List) = NULL
-SMP_FMP_enrich_CC_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(SMP_FMP_enrich_CC_List) = NULL
-SMP_FMP_enrich_MF_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(SMP_FMP_enrich_MF_List) = NULL
-
-
-
-
-# Function takes 
-
-ReduceDim_Go_Plot = function(Enrich_Out,
+str(AR_CNTRL_enrich)
+# Function takes Enrichment table as imput (same format as "AR_CNTRL_enrich", for example, like the one above)
+ReduceDim_GO_Plot = function(Enrich_Out,
                              GOthres = 0.001,
+                             label_size1 = 0.4,
+                             label_size2 = 0.4,
+                             label_size3 = 0.4,
                              Database = "org.Bt.eg.db",
                              measure="Jiang",combine=NULL,
                              Dataset_Name){
-  library(GOSemSim);library(corrplot);library(Database);library(tidyverse)
-  semData_BP <- godata(Database, ont="BP", computeIC=T)
-  semData_MF <- godata(Database, ont="MF", computeIC=T)
-  semData_CC <- godata(Database, ont="CC", computeIC=T)
-  
+  # load libraries + download ref database
+  library(GOSemSim);library(corrplot);library(tidyverse)
+  do.call(library,list(Database))
+  semData_BP <- godata(paste(Database), ont="BP", computeIC=T)
+  semData_MF <- godata(paste(Database), ont="MF", computeIC=T)
+  semData_CC <- godata(paste(Database), ont="CC", computeIC=T)
+  # selection + formating: for each category we have one vector containing all the sig GO terms
   BP_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "biological_process") %>% 
-    dplyr::select(go_id) %>% unlist();attributes(BP_List) = NULL
+    dplyr::select(go_id) %>% unlist();attributes(BP_List) = NULL # name is an attribute and we dont them, so set null
   CC_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "cellular_component") %>% 
-    dplyr::select(go_id) %>% unlist();attributes(CC_Listt) = NULL
+    dplyr::select(go_id) %>% unlist();attributes(CC_List) = NULL
   MF_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "molecular_function") %>% 
     dplyr::select(go_id) %>% unlist();attributes(MF_List) = NULL
+  ### Now we are trying to get all similarity matrix ready. N x N, symetric, diag = 1
   # For BP
-  
-  colnames(goSimMat_test_new) = paste(PRF_CNTRL_enrich_BP_List,PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)])
-  rownames(goSimMat_test_new) = paste(PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)],PRF_CNTRL_enrich_BP_List)
-  
-  goSimMatrix_BP = GOSemSim::mgoSim(BP_List,BP_List,semData=semData_BP,measure=measure,combine = combine)
+  goSimMatrix_BP = GOSemSim::mgoSim(BP_List,
+                                    BP_List,
+                                    semData=semData_BP,measure=measure,combine = combine)
   suspectID_BP = rownames(goSimMatrix_BP)[is.na(goSimMatrix_BP[,1])]
   if (length(suspectID_BP) != 0){BP_List_new = BP_List[-which(BP_List == suspectID)]
   message(length(suspectID_BP)," invalid ID captured in BP: ",suspectID_BP)
   } else {BP_List_new = BP_List;message("Nice! All IDs are valid in BP!")}
-  goSimMatrix_BP_new = GOSemSim::mgoSim(BP_List_new,BP_List_new,
+  goSimMatrix_BP_new = GOSemSim::mgoSim(BP_List_new,
+                                        BP_List_new,
                                         semData=semData_BP,measure=measure,combine = combine)
   colnames(goSimMatrix_BP_new) = paste(BP_List_new,Enrich_Out$GO_Name[(Enrich_Out$go_id %in% BP_List_new)])
   rownames(goSimMatrix_BP_new) = paste(Enrich_Out$GO_Name[(Enrich_Out$go_id %in% BP_List_new)],BP_List_new)
-  # For BP
-  goSimMatrix_CC = GOSemSim::mgoSim(CC_List,CC_List,semData=semData_MF,measure=measure,combine = combine)
+  # For CC
+  goSimMatrix_CC = GOSemSim::mgoSim(CC_List,
+                                    CC_List,
+                                    semData=semData_CC,measure=measure,combine = combine)
   suspectID_CC = rownames(goSimMatrix_CC)[is.na(goSimMatrix_CC[,1])]
-  if (length(suspectID_CC) != 0){BP_List_new = CC_List[-which(CC_List == suspectID_CC)]
+  if (length(suspectID_CC) != 0){CC_List_new = CC_List[-which(CC_List == suspectID_CC)]
   message(length(suspectID_CC)," invalid ID captured in CC: ",suspectID_CC)
   } else {CC_List_new = CC_List;message("Nice! All IDs are valid in CC!")}
-  goSimMatrix_CC_new = GOSemSim::mgoSim(CC_List_new,CC_List_new,
-                                        semData=semData_CC,measure=measure,combine = combine)
+  goSimMatrix_CC_new = GOSemSim::mgoSim(CC_List_new,
+                                        CC_List_new,
+                                        semData=semData_CC,measure=measure,combine =combine)
+  colnames(goSimMatrix_CC_new) = paste(CC_List_new,Enrich_Out$GO_Name[(Enrich_Out$go_id %in% CC_List_new)])
+  rownames(goSimMatrix_CC_new) = paste(Enrich_Out$GO_Name[(Enrich_Out$go_id %in% CC_List_new)],CC_List_new)
   # For MF
-  goSimMatrix_MF = GOSemSim::mgoSim(BP_List,BP_List,semData=semData_CC,measure=measure,combine = combine)
+  goSimMatrix_MF = GOSemSim::mgoSim(MF_List,
+                                    MF_List,
+                                    semData=semData_MF,measure=measure,combine = combine)
   suspectID_MF = rownames(goSimMatrix_MF)[is.na(goSimMatrix_MF[,1])]
   if (length(suspectID_MF) != 0){MF_List_new = MF_List[-which(MF_List == suspectID_MF)]
   message(length(suspectID_MF)," invalid ID captured in MF: ",suspectID_MF)
   } else {MF_List_new = MF_List;message("Nice! All IDs are valid in MF!")}
-  goSimMatrix_MF_new = GOSemSim::mgoSim(MF_List_new,MF_List_new,
+  goSimMatrix_MF_new = GOSemSim::mgoSim(MF_List_new,
+                                        MF_List_new,
                                         semData=semData_MF,measure=measure,combine = combine)
-  
-  
-  "Semantic_Similarity_Measure"
+  colnames(goSimMatrix_MF_new) = paste(MF_List_new,Enrich_Out$GO_Name[(Enrich_Out$go_id %in% MF_List_new)])
+  rownames(goSimMatrix_MF_new) = paste(Enrich_Out$GO_Name[(Enrich_Out$go_id %in% MF_List_new)],MF_List_new)
+  # Now we take the results and plot
+  pdf(paste("Semantic_Similarity_Measure_",Dataset_Name,"_",formatC(GOthres, format = "e", digits = 0),".pdf",sep = ""))
+  corrplot(goSimMatrix_CC_new,title = "Semantic_Similarity_Measure_CC",
+           tl.col = "black", tl.cex = label_size1, 
+           method = "shade", order = "hclust", 
+           hclust.method = "centroid", is.corr = FALSE,mar=c(0,0,1,0))
+  corrplot(goSimMatrix_BP_new,title = "Semantic_Similarity_Measure_BP",
+           tl.col = "black", tl.cex = label_size2, 
+           method = "shade", order = "hclust", 
+           hclust.method = "centroid", is.corr = FALSE,mar=c(0,0,1,0))
+  corrplot(goSimMatrix_MF_new,title = "Semantic_Similarity_Measure_MF",
+           tl.col = "black", tl.cex = label_size3, 
+           method = "shade", order = "hclust", 
+           hclust.method = "centroid", is.corr = FALSE,mar=c(0,0,1,0))
+  dev.off()
+  message(dim(goSimMatrix_CC_new)[1],",",
+          dim(goSimMatrix_BP_new)[1],",",
+          dim(goSimMatrix_MF_new)[1]," GOs ploted in CC, BP and MF, respectively")
+  save(goSimMatrix_CC,goSimMatrix_BP,goSimMatrix_MF,
+       file = paste("Semantic_Similarity_Measure_",Dataset_Name,"_",formatC(GOthres, format = "e", digits = 0),".RData",sep = ""))
+  message("Nice! plot exported and RData saved!")
 }
 
-
-# PRF_CNTRL - 0.01
-PRF_CNTRL_enrich_BP_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_BP_List) = NULL
-PRF_CNTRL_enrich_CC_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_CC_List) = NULL
-PRF_CNTRL_enrich_MF_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
-  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_MF_List) = NULL
-
-
-# for Megan
-library(GOSemSim);library(corrplot)
-goSimMat_PRF_CNTRL_BP = GOSemSim::mgoSim(PRF_CNTRL_enrich_BP_List,
-                                         PRF_CNTRL_enrich_BP_List,
-                              semData=semData_BP,
-                              measure="Jiang", combine=NULL) # combind why use null?
-suspectID = rownames(goSimMat_PRF_CNTRL_MF)[is.na(goSimMat_PRF_CNTRL_BP[,1])]
-suspectID
-  if (length(suspectID) != 0){PRF_CNTRL_enrich_MF_List_new = PRF_CNTRL_enrich_BP_List[-which(PRF_CNTRL_enrich_BP_List == suspectID)]
-  } else {PRF_CNTRL_enrich_BP_List_new = PRF_CNTRL_enrich_BP_List}
-
-goSimMat_test_new = mgoSim(PRF_CNTRL_enrich_BP_List_new,
-                           PRF_CNTRL_enrich_BP_List_new,
-                           semData=semData_BP,
-                           measure="Jiang", combine=NULL) # combind why use null?
-PRF_CNTRL_enrich_BP_List =PRF_CNTRL_enrich_BP_List[-which(PRF_CNTRL_enrich_BP_List ==suspectID)]
-colnames(goSimMat_test_new) = paste(PRF_CNTRL_enrich_BP_List,PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)])
-rownames(goSimMat_test_new) = paste(PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)],PRF_CNTRL_enrich_BP_List)
-x = corrplot(goSimMat_test_new,tl.col = "black", tl.cex = 0.4, 
-             method = "shade", order = "hclust", 
-             hclust.method = "centroid", is.corr = FALSE)
-
-x
-#
-
-
-
-dev.off()
-write(labels,"labels_AR_CONTROL_BP_0.01.csv")
-
-
-
-colnames(M) <- c("a", "set", "of", "x", "labels", 1:6)
-corrplot(M, method = "color")
-
-?corrplot()
-
-
-goSimMat_test[rownames(goSimMat_test) == "GO:0120162",]
-
-1] "GO:0033089" "GO:0032534"
-[3] "GO:0070120" "GO:0048843"
-[5] "GO:1905606" "GO:0120162"
-
-
-
-
-
-select(org.Bt.eg.db,keys ="GO:1905606",keytype = "GO","ENTREZID" )
-
-
-view(goSimMat_test)
-
-view(goSimMat_test)
-goSimMat_test2 = mgoSim(list,
-                        list,
-                        semData=semData_BP,
-                        measure="Jiang", combine=NULL) # combind why use null?
-dev.off()
-x = corrplot(goSimMat_test2, tl.col = "black", tl.cex = 0.8, 
-             method = "shade", order = "hclust", 
-             hclust.method = "centroid", is.corr = FALSE)
-
-
-
-
-
-
+# now plot
+ReduceDim_GO_Plot(AR_CNTRL_enrich,Dataset_Name = "AR_CNTRL_enrich")
+ReduceDim_GO_Plot(PRF_CNTRL_enrich,Dataset_Name = "PRF_CNTRL_enrich")
+ReduceDim_GO_Plot(FPM_CNTRL_enrich,Dataset_Name = "FPM_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_CNTRL_enrichh,Dataset_Name = "SMP_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_FMP_enrich,Dataset_Name = "SMP_FMP_enrich")
