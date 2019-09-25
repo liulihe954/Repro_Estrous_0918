@@ -5,7 +5,6 @@ goList = # vector of significant GO terms
 goSimMat = mgoSim(goList, goList, ont="BP", measure="Jiang", combine=NULL)
 corrplot(goSimMat, tl.col = "black", tl.cex = 0.8, method = "shade", order = "hclust", hclust.method = "centroid", is.corr = FALSE)
 
-
 #
 ##########################################################################################
 #                         6. reduce hierarcy FOR Similarity                              #
