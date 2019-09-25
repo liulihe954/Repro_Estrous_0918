@@ -139,6 +139,7 @@ PRF_CNTRL_enrich_CC_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namesp
 PRF_CNTRL_enrich_MF_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
   dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_MF_List) = NULL
 
+
 # - 0.05 / 0.01
 FPM_CNTRL_enrich_BP_List = dplyr::filter(FPM_CNTRL_enrich,pvalue<=0.05 & namespace_1003 == "biological_process") %>% 
   dplyr::select(go_id) %>% unlist();attributes(FPM_CNTRL_enrich_BP_List) = NULL
@@ -166,51 +167,93 @@ SMP_FMP_enrich_MF_List = dplyr::filter(SMP_FMP_enrich,pvalue<=0.001 & namespace_
 
 
 
-# Function takes
-ReduceDim_Go_Plot = function(Enrich_Out,GOthres,Database = "org.Bt.eg.db",measure="Jiang",combine=NULL){
+# Function takes 
+
+ReduceDim_Go_Plot = function(Enrich_Out,
+                             GOthres = 0.001,
+                             Database = "org.Bt.eg.db",
+                             measure="Jiang",combine=NULL,
+                             Dataset_Name){
   library(GOSemSim);library(corrplot);library(Database);library(tidyverse)
   semData_BP <- godata(Database, ont="BP", computeIC=T)
   semData_MF <- godata(Database, ont="MF", computeIC=T)
   semData_CC <- godata(Database, ont="CC", computeIC=T)
+  
   BP_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "biological_process") %>% 
     dplyr::select(go_id) %>% unlist();attributes(BP_List) = NULL
   CC_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "cellular_component") %>% 
     dplyr::select(go_id) %>% unlist();attributes(CC_Listt) = NULL
   MF_List = dplyr::filter(Enrich_Out,pvalue<=GOthres & namespace_1003 == "molecular_function") %>% 
     dplyr::select(go_id) %>% unlist();attributes(MF_List) = NULL
+  # For BP
+  
+  colnames(goSimMat_test_new) = paste(PRF_CNTRL_enrich_BP_List,PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)])
+  rownames(goSimMat_test_new) = paste(PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)],PRF_CNTRL_enrich_BP_List)
   
   goSimMatrix_BP = GOSemSim::mgoSim(BP_List,BP_List,semData=semData_BP,measure=measure,combine = combine)
+  suspectID_BP = rownames(goSimMatrix_BP)[is.na(goSimMatrix_BP[,1])]
+  if (length(suspectID_BP) != 0){BP_List_new = BP_List[-which(BP_List == suspectID)]
+  message(length(suspectID_BP)," invalid ID captured in BP: ",suspectID_BP)
+  } else {BP_List_new = BP_List;message("Nice! All IDs are valid in BP!")}
+  goSimMatrix_BP_new = GOSemSim::mgoSim(BP_List_new,BP_List_new,
+                                        semData=semData_BP,measure=measure,combine = combine)
+  colnames(goSimMatrix_BP_new) = paste(BP_List_new,Enrich_Out$GO_Name[(Enrich_Out$go_id %in% BP_List_new)])
+  rownames(goSimMatrix_BP_new) = paste(Enrich_Out$GO_Name[(Enrich_Out$go_id %in% BP_List_new)],BP_List_new)
+  # For BP
   goSimMatrix_CC = GOSemSim::mgoSim(CC_List,CC_List,semData=semData_MF,measure=measure,combine = combine)
+  suspectID_CC = rownames(goSimMatrix_CC)[is.na(goSimMatrix_CC[,1])]
+  if (length(suspectID_CC) != 0){BP_List_new = CC_List[-which(CC_List == suspectID_CC)]
+  message(length(suspectID_CC)," invalid ID captured in CC: ",suspectID_CC)
+  } else {CC_List_new = CC_List;message("Nice! All IDs are valid in CC!")}
+  goSimMatrix_CC_new = GOSemSim::mgoSim(CC_List_new,CC_List_new,
+                                        semData=semData_CC,measure=measure,combine = combine)
+  # For MF
   goSimMatrix_MF = GOSemSim::mgoSim(BP_List,BP_List,semData=semData_CC,measure=measure,combine = combine)
+  suspectID_MF = rownames(goSimMatrix_MF)[is.na(goSimMatrix_MF[,1])]
+  if (length(suspectID_MF) != 0){MF_List_new = MF_List[-which(MF_List == suspectID_MF)]
+  message(length(suspectID_MF)," invalid ID captured in MF: ",suspectID_MF)
+  } else {MF_List_new = MF_List;message("Nice! All IDs are valid in MF!")}
+  goSimMatrix_MF_new = GOSemSim::mgoSim(MF_List_new,MF_List_new,
+                                        semData=semData_MF,measure=measure,combine = combine)
   
   
-  
+  "Semantic_Similarity_Measure"
 }
 
 
+# PRF_CNTRL - 0.01
+PRF_CNTRL_enrich_BP_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "biological_process") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_BP_List) = NULL
+PRF_CNTRL_enrich_CC_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "cellular_component") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_CC_List) = NULL
+PRF_CNTRL_enrich_MF_List = dplyr::filter(PRF_CNTRL_enrich,pvalue<=0.001 & namespace_1003 == "molecular_function") %>% 
+  dplyr::select(go_id) %>% unlist();attributes(PRF_CNTRL_enrich_MF_List) = NULL
 
-paste(AR_CNTRL_enrich_BP_List,AR_CNTRL_enrich$GO_Name[(AR_CNTRL_enrich$go_id %in% AR_CNTRL_enrich_BP_List)])
 
+# for Megan
 library(GOSemSim);library(corrplot)
-goSimMat_AR_CNTRL_BP = GOSemSim::mgoSim(AR_CNTRL_enrich_BP_List,
-                              AR_CNTRL_enrich_BP_List,
+goSimMat_PRF_CNTRL_BP = GOSemSim::mgoSim(PRF_CNTRL_enrich_BP_List,
+                                         PRF_CNTRL_enrich_BP_List,
                               semData=semData_BP,
                               measure="Jiang", combine=NULL) # combind why use null?
-suspectID = rownames(goSimMat_AR_CNTRL_BP)[is.na(goSimMat_AR_CNTRL_BP[,1])]
+suspectID = rownames(goSimMat_PRF_CNTRL_MF)[is.na(goSimMat_PRF_CNTRL_BP[,1])]
 suspectID
-  if (length(suspectID) != 0){AR_CNTRL_enrich_BP_List_new = AR_CNTRL_enrich_BP_List[-which(AR_CNTRL_enrich_BP_List == suspectID)]
-  } else {AR_CNTRL_enrich_BP_List_new = AR_CNTRL_enrich_BP_List}
-goSimMat_test_new = mgoSim(AR_CNTRL_enrich_BP_List_new,
-                           AR_CNTRL_enrich_BP_List_new,
+  if (length(suspectID) != 0){PRF_CNTRL_enrich_MF_List_new = PRF_CNTRL_enrich_BP_List[-which(PRF_CNTRL_enrich_BP_List == suspectID)]
+  } else {PRF_CNTRL_enrich_BP_List_new = PRF_CNTRL_enrich_BP_List}
+
+goSimMat_test_new = mgoSim(PRF_CNTRL_enrich_BP_List_new,
+                           PRF_CNTRL_enrich_BP_List_new,
                            semData=semData_BP,
                            measure="Jiang", combine=NULL) # combind why use null?
-colnames(goSimMat_test_new) = paste(AR_CNTRL_enrich_BP_List,AR_CNTRL_enrich$GO_Name[(AR_CNTRL_enrich$go_id %in% AR_CNTRL_enrich_BP_List)])
-rownames(goSimMat_test_new) = paste(AR_CNTRL_enrich$GO_Name[(AR_CNTRL_enrich$go_id %in% AR_CNTRL_enrich_BP_List)],AR_CNTRL_enrich_BP_List)
+PRF_CNTRL_enrich_BP_List =PRF_CNTRL_enrich_BP_List[-which(PRF_CNTRL_enrich_BP_List ==suspectID)]
+colnames(goSimMat_test_new) = paste(PRF_CNTRL_enrich_BP_List,PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)])
+rownames(goSimMat_test_new) = paste(PRF_CNTRL_enrich$GO_Name[(PRF_CNTRL_enrich$go_id %in% PRF_CNTRL_enrich_BP_List)],PRF_CNTRL_enrich_BP_List)
 x = corrplot(goSimMat_test_new,tl.col = "black", tl.cex = 0.4, 
              method = "shade", order = "hclust", 
              hclust.method = "centroid", is.corr = FALSE)
 
 x
+#
 
 
 
