@@ -116,9 +116,9 @@ GO_Enrich_Pregnancy_005 <- list("Full_join" = GO_Results_full_005_preg, "Inner_j
 #                            5.Take 0.01 - be more strengent                           #
 ########################################################################################
 # This is for test pval, to see how many you'll get at which pval; change groups/thres first
-Enrich_Out = FPM_CNTRL# choices: "FPM_CNTRL" "AR_CNTRL"  "PRF_CNTRL" "SMP_CNTRL" "SMP_FMP" 
+Enrich_Out = FPM_CNTRL_enrich# choices: "FPM_CNTRL" "AR_CNTRL"  "PRF_CNTRL" "SMP_CNTRL" "SMP_FMP" 
 GOthres_testp = 0.005
-BP_List = dplyr::filter(Enrich_Out,pvalue<=GOthres_testp & namespace_1003 == "biological_process") %>% 
+BP_List = dplyr::filter(Enrich_Out,pvalue<= GOthres_testp & namespace_1003 == "biological_process") %>% 
   dplyr::select(go_id) %>% unlist();attributes(BP_List) = NULL 
 CC_List = dplyr::filter(Enrich_Out,pvalue<=GOthres_testp & namespace_1003 == "cellular_component") %>% 
   dplyr::select(go_id) %>% unlist();attributes(CC_List) = NULL
