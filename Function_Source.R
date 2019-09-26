@@ -254,6 +254,8 @@ Parse_GO_Results = function(GO_results_b){
   print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
   return(ParseResults = all_enrich_GO)
 }
+
+
 #########################################################################################################################
 #########################################################################################################################
 InterPro_Enrich = function(total.genes,
@@ -371,6 +373,22 @@ InterPro_Enrich = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",IPthres)
   message("Nice! - Interpro enrichment finished and data saved")}
+
+#########################################################################################################################
+Parse_Interpro_Results = function(Interpro_results_b){
+  all_enrich_Interpro = data.frame()
+  for (i in 1:length(Interpro_results_b)){
+    len = dim(data.frame(Interpro_results_b[i]))[1]
+    if (len> 0){
+      all_enrich_Interpro = rbind(all_enrich_Interpro,data.frame(Interpro_results_b[i]))
+    }
+  }
+  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
+  total_hits = dim(all_enrich_Interpro)[1]
+  total_modules = length(Interpro_results_b)
+  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
+  return(ParseResults = all_enrich_Interpro)
+}
 #########################################################################################################################
 #########################################################################################################################
 
