@@ -166,13 +166,7 @@ compile_select_index = c("InterproID","Interpro_Name","Total_Genes","Significant
 AR_CNTRL_enrich_IP = Parse_Interpro_Results(Interpro_results_b[2]) 
 names(AR_CNTRL_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
 AR_CNTRL_enrich_IP = dplyr::select(AR_CNTRL_enrich_IP,compile_select_index)  #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
-
-length(AR_CNTRL_enrich_IP$InterproID) - length(AR_CNTRL_enrich_IP$InterproID %in% match_family$InterproID)
-length(AR_CNTRL_enrich_IP$InterproID) - length(intersect(AR_CNTRL_enrich_IP$InterproID, match_family$InterproID))
-
 AR_CNTRL_enrich_IP = merge(AR_CNTRL_enrich_IP,match_family,by = "InterproID")
-#View(AR_CNTRL_enrich_IP)
-dim(AR_CNTRL_enrich_IP)
 
 #
 PRF_CNTRL_enrich_IP = Parse_Interpro_Results(Interpro_results_b[3])
@@ -196,7 +190,6 @@ SMP_FMP_enrich_IP = Parse_Interpro_Results(Interpro_results_b[5])
 names(SMP_FMP_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
 SMP_FMP_enrich_IP =  dplyr::select(SMP_FMP_enrich_IP,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 SMP_FMP_enrich_IP = merge(SMP_FMP_enrich_IP,match_family,by = "InterproID")
-
 
 #### group 1 - regression
 Interpro_Results_full_005_reg <-
