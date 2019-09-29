@@ -260,7 +260,7 @@ InterPro_Enrich = function(total.genes,
   Interpro = na.omit(InterproName$interpro)[-1]
   Name = na.omit(InterproName$interpro_description)[-1]
   #
-  if (Identifier == "ensembl_gene_id"){genesInterpro = unique(subset(InterproName,interpro != "")$ensembl_gene_id)
+  if (Identifier == "ensembl_gene_id"){genesInterpro = unique(subset(gene,interpro != "")$ensembl_gene_id)
   } else if (Identifier == "external_gene_name") {
     genesInterpro= unique(subset(gene,interpro != "")$external_gene_name);
     genesInterpro = genesInterpro[-1]
