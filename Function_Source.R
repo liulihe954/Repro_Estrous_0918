@@ -365,4 +365,143 @@ Parse_Interpro_Results = function(Interpro_results_b){
 }
 #########################################################################################################################
 #########################################################################################################################
+MESH_Enrich = function(total_genes_all,
+                       sig_genes_all,
+                       TestingSubsetNames,
+                       Meshthres = 0.05,
+                       MeshCate = c("D","G"),
+                       #biomart="ensembl",
+                       dataset="MeSH.Bta.eg.db",
+                       #dataset= "btaurus_gene_ensembl",
+                       #Identifier = "external_gene_name",
+                       #attributes = c("ensembl_gene_id","external_gene_name","entrezgene_id"),
+                       keyword = "MESH_Enrichment"){
+  #total.genes = Total_list_out_entrez_test
+  #sig.genes = Sig_list_out_entrez_test
+  #TestingSubsetNames = TestingSubsetNames_test
+  total_enrich = 0                        
+  raw_pvalue_all = numeric()
+  Mesh_results_b = list()
+  Mesh_results_b_raw = list()
+  library(MeSH.db);library(MeSH.Bta.eg.db);library(tidyverse);library(gage);library(magrittr)
+  library(ggplot2);library(biomaRt) # load pkg
+  # raw data for retrive MESHid and all details linked
+  KEY = keys(MeSH.db, keytype = "MESHID")
+  List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
+  #List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
+  Match_List = dplyr::select(List, MESHID, MESHTERM)
+  #head(Match_List) 
+  # Prepare Bta database
+  library(MeSH.Bta.eg.db)
+  key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
+  list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
+    dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY == MeshCate) %>% 
+    dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
+  # head(list_Bta,30)
+  # Get index
+  genesMesh = unique(list_Bta$GENEID)
+  MeshID = unique(list_Bta$MESHID)
+  #MeshID = MeshID[1:1000]
+  MeshTerm = unique(list_Bta$MESHTERM)
+  #length(genesGO)
+  message("Total Number of module/subsets to check: ",length(TestingSubsetNames))
+  message("Total Number of Mesh to check: ",length(MeshID)," with total number of names: ",length(MeshTerm))
+  #pdf(paste(trimws(keyword),".pdf",sep = ""))
+  for (i in c(1:(length(TestingSubsetNames)))){
+    # i = 2
+    # sig.genes = Sig_list_out_entrez_test
+    # total.genes = Total_list_out_entrez_test
+    message("working on dataset #",i," - ",TestingSubsetNames[i])
+    sig.genes = unlist(sig_genes_all[i]);attributes(sig.genes) = NULL
+    total.genes = unlist(total_genes_all[i]);attributes(total.genes) = NULL
+    # total genes in the non-preserved module
+    N = length(total.genes[total.genes %in% genesMesh])
+    S = length(sig.genes[sig.genes %in% genesMesh]) #
+    ExternalLoss_total = paste((length(total.genes) - N),round((length(total.genes) - N)/N,3),sep = "/")
+    ExternalLoss_sig = paste((length(sig.genes) - S),round((length(sig.genes) - S)/S,3),sep = "/")
+    out = data.frame(MeshID=character(),
+                     MeshTerm=character(),
+                     totalG=numeric(),
+                     sigG=numeric(),
+                     Pvalue=numeric(),
+                     ExternalLoss_total = character(),
+                     ExternalLoss_sig = character())
+    message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
+    for(j in 1:length(MeshID)){
+      if (j%%1000 == 0) {message("tryingd on MeshID ",j," - ",MeshID[j]," - ",MeshTerm[j])}
+      head(list_Bta)
+      gENEs = subset(list_Bta, MESHID == MESHID[j])$GENEID
+      m = length(total.genes[total.genes %in% gENEs]) # genes from target interpro and in our dataset
+      s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target interpro also in the non-preserved module
+      M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
+      Pval = round(fisher.test(M, alternative ="g")$p.value,100)
+      tmp = data.frame(MeshID= MeshID[j], 
+                       MeshTerm = MeshTerm[j], 
+                       totalG = m, 
+                       sigG = s, 
+                       Pvalue = Pval, 
+                       ExternalLoss_total = ExternalLoss_total,
+                       ExternalLoss_sig = ExternalLoss_sig)
+      out = rbind(out,tmp)}
+    # put all palues in a box
+    raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
+    # raw complilation starts
+    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
+    Mesh_results_b_raw[[i]] = final_raw; names(Mesh_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched Mesh raw")
+    # raw complilation ends
+    # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
+    ot = subset(out,totalG > 4 & Pvalue <= Meshthres)
+    final = ot[order(ot$Pvalue),];colnames(final) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
+    Mesh_results_b[[i]] = final;names(Mesh_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched Mesh")
+    # selection ends
+    message("Significant Enrichment Hits:",nrow(final))
+    total_enrich = total_enrich + nrow(final)
+    ##
+    #   print(final %>% 
+    #           top_n(dim(final)[1], wt= -pvalue)%>% 
+    #           ggplot(final, aes( x = hitsPerc,
+    #                      y = GO_Name,
+    #                      colour = pvalue,
+    #                      size = Significant_Genes)) +
+    #           geom_point() +
+    #           theme_gray()+
+    #          labs(title= paste("GO Enrichment in module",
+    #                              TestingSubsetNames[i])), 
+    #                              x="Hits (%)", y="GO term", 
+    #                              colour="p value", size="Count")+
+    #      theme(axis.text.x = element_text(size = 8,color = "black",vjust = 0.5, hjust = 0.5))+
+    #      theme(axis.text.y = element_text(size = 8,color = "black",vjust = 0.5, hjust = 0.5))+
+    #      theme(axis.title.x = element_text(size = 8,color = "black",vjust = 0.5, hjust = 0.5))+
+    #      theme(axis.title.y = element_text(size = 8, color = "black",vjust = 0.5, hjust = 0.5))+
+    #      theme(plot.title = element_text(size = 12,color = "black", face = "bold", vjust = 0.5, hjust = 0.5))
+  }
+  #  dev.off()
+  raw_pvalue_index = seq(0.05,1,by=0.05)
+  raw_pvalue_sum = numeric()
+  for( z in seq_along(raw_pvalue_index)){raw_pvalue_sum[z] = length(which(raw_pvalue_all <= raw_pvalue_index[z]))}
+  raw_pvalue_distribution = data.frame(index = raw_pvalue_index,counts_Interpro = raw_pvalue_sum)
+  #raw_pvalue_distribution
+  save(Mesh_results_b, Mesh_results_b_raw, raw_pvalue_distribution, file = paste(trimws(keyword),".RData",sep = ""))
+  message(total_enrich," significant MeshIDs found within ",
+          length(TestingSubsetNames)," modules/subsets", 
+          " at the significance level of ",Meshthres)
+  message("Nice! - Mesh enrichment finished and data saved")}
+
+#########################################################################################################################
+Parse_Mesh_Results = function(Mesh_results_b){
+  all_enrich_Mesh = data.frame()
+  for (i in 1:length(Mesh_results_b)){
+    len = dim(data.frame(Mesh_results_b[i]))[1]
+    if (len> 0){
+      all_enrich_Mesh = rbind(all_enrich_Mesh,data.frame(Mesh_results_b[i]))
+    }
+  }
+  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
+  total_hits = dim(all_Mesh_Interpro)[1]
+  total_modules = length(Mesh_results_b)
+  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
+  return(ParseResults = all_enrich_Mesh)
+}
 

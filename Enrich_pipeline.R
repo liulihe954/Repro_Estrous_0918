@@ -220,5 +220,87 @@ write.xlsx(Interpro_Enrich_Pregnancy_005,file = "Interpro_Enrich_Pregnancy_005_0
 
 
 
+#######################################################################################
+#                             7. Conversion to EntrezID                               #
+#                                  Mesh Enrich                                        #
+#######################################################################################
+# Here we have the data compilation
+# List with lenght 5 (one for each, easier for looping)
+#    sig_genes_all
+#    total_genes_all
+#
+# Now we convert
+# two steps - 
+# 1. using alias2Symbol(): get the symbol
+# 2, convert using biomart
+# Potentially loose some, but that's life
+## transform ensemble ID or External Gene name to EntrezID
+ensembl_try=useMart("ENSEMBL_MART_ENSEMBL",dataset="btaurus_gene_ensembl")
+attributes_try = c("external_gene_name","entrezgene_accession","entrezgene_id") #"entrezgene_accession"
+#,"reactome","reactome_gene")
+# "entrezgene_trans_name"
+gene_try = getBM(attributes=attributes_try,mart = ensembl_try)
+
+match_source = dplyr::select(gene_try,external_gene_name,entrezgene_id)
+
+
+
+for (i in c(1:5)){
+  tmp1 = unlist(sig_genes_all[[i]])
+  for (n in seq_along(tmp1)){
+    trans = alias2Symbol(tmp1[n],species = "Bt", expand.symbols = F)
+    if (length(trans) == 0){tmp1[n] = tmp1[n]}
+    else {tmp1[n] = trans}
+  }
+  tmp2 = unlist(total_genes_all[[i]])
+  for (m in seq_along(tmp2)){
+    trans = alias2Symbol(tmp2[m],species = "Bt", expand.symbols = F)
+    if (length(trans) == 0){tmp2[n] = tmp2[n]}
+    else {tmp2[n] = trans}
+  }
+  #
+  origin1 = data.frame(sig_genes_all[[i]])
+  origin2 = data.frame(total_genes_all[[i]])
+  #names(tmp1) = names(tmp2) = "external_gene_name"
+  test_inner1 = data.frame(origin = origin1,name_trans = tmp1)
+  test_inner2 = data.frame(origin = origin2,name_trans = tmp2)
+  test_inner1 = dplyr::left_join(test_inner1,match_source,by=c("name_trans" = "external_gene_name"))
+  test_inner2 = dplyr::left_join(test_inner2,match_source,by=c("name_trans" = "external_gene_name"))
+  # substitue entrez id with ### following "LOC"
+  index1 = is.na(test_inner1$entrezgene_id)
+  test_inner1$entrezgene_id[index1] = sub("^LOC*","",test_inner1$gene)[index1]
+  index2 = is.na(test_inner2$entrezgene_id)
+  test_inner2$entrezgene_id[index2] = sub("^LOC*","",test_inner2$gene)[index2]
+  #
+  Sig_list_out[[i]] = test_inner1
+  Total_list_out[[i]] = test_inner2
+  names(Sig_list_out)[i] = names(sig_genes_all)[i]
+  names(Total_list_out)[i] = names(total_genes_all)[i]
+  t1 = table(is.na(test_inner1[,3]))
+  message("this is for sig")
+  print(t1)
+  t2 = table(is.na(test_inner2[,3]))
+  message("this is for total")
+  print(t2)
+}
+
+# print out
+require(openxlsx)
+write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
+write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
+
+# Keep only the entrez ID: then we have one vector for each element of the list (some format as always)
+Sig_list_out_entrez = list()
+Total_list_out_entrez = list()
+for (i in c(1:5)){
+  Sig_list_out_entrez[[i]] = data.frame(Sig_list_out[[i]])$entrezgene_id
+  names(Sig_list_out_entrez)[i] = names(Sig_list_out)[i]
+  Total_list_out_entrez[[i]] = data.frame(Total_list_out[[i]])$entrezgene_id
+  names(Total_list_out_entrez)[i] = names(Total_list_out)[i]
+}
+
+
+str(Total_list_out_entrez)
+str(Sig_list_out_entrez)
 
 
