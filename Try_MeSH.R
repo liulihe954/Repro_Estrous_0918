@@ -1,40 +1,21 @@
 BiocManager::install("MeSH.db")
 BiocManager::install("MeSH.Bta.eg.db")
-
+library(MeSH.db)
+library(MeSH.Bta.eg.db)
 
 # raw data for retrive MESHid and all details linked
 KEY = keys(MeSH.db, keytype = "MESHID")
-List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
+List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
 Match_List = dplyr::select(List, MESHID, MESHTERM)
 # head(Match_List) 
 
 # Prepare Bta database
-library(MeSH.db)
-library(MeSH.Bta.eg.db)
-library(tidyverse)
 key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
-list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
+list_Bta = select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
   dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY == c("D","G")) %>% 
   dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
 # head(list_Bta,30)
 
 
-
-TestingSubsetNames_test = TestingSubsetNames[1:2]
-Total_list_out_entrez_test=Total_list_out_entrez[1:2]
-str(Total_list_out_entrez_test)
-Sig_list_out_entrez_test = Sig_list_out_entrez[1:2]
-str(Sig_list_out_entrez_test)
-
-#test = MESH_Enrich(total_genes_all= Total_list_out_entrez_test,
-#                   sig_genes_all = Sig_list_out_entrez_test,
-#                   TestingSubsetNames = TestingSubsetNames_test,
-#                   Meshthres = 0.05,
-                   #biomart="ensembl",
-#                   dataset="MeSH.Bta.eg.db",
-                   #dataset= "btaurus_gene_ensembl",
-                   #Identifier = "external_gene_name",
-                   #attributes = c("ensembl_gene_id","external_gene_name","entrezgene_id"),
-#                   keyword = "MESH_Enrichment_test_1001")
 
 

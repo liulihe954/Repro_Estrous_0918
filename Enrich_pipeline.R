@@ -139,16 +139,16 @@ message(" BP: ",length(BP_List)," CC: ",length(CC_List)," MF: ",length(MF_List))
 #                            Join datatest and Compilation                            #
 #######################################################################################
 # main body of the function 
-Interpro_Enrich_Results_thres005 = 
-      InterPro_Enrich(total_genes_all,
-                      sig_genes_all,
-                      TestingSubsetNames,
-                      IPthres = 0.05,
-                      biomart="ensembl",
-                      dataset="btaurus_gene_ensembl",
-                      Identifier = "external_gene_name",
-                      attributes = c("ensembl_gene_id","external_gene_name","interpro","interpro_description"),
-                      keyword = "Interpro_Enrichment_thres005_0925")
+#Interpro_Enrich_Results_thres005 = 
+#      InterPro_Enrich(total_genes_all,
+#                      sig_genes_all,
+#                      TestingSubsetNames,
+#                      IPthres = 0.05,
+#                      biomart="ensembl",
+#                      dataset="btaurus_gene_ensembl",
+#                      Identifier = "external_gene_name",
+#                      attributes = c("ensembl_gene_id","external_gene_name","interpro","interpro_description"),
+#                      keyword = "Interpro_Enrichment_thres005_0925")
 
 ## load in the results just created. Tip: use the key word above
 load("Interpro_Enrichment_thres005_0925.RData")
@@ -158,7 +158,6 @@ library(tidyverse)
 match_family = read.table("entry.list",sep = "\t",header = T)
 match_family = as_tibble(match_family) %>% dplyr::select(ENTRY_AC,ENTRY_TYPE) %>% 
 rename(InterproID = ENTRY_AC,Type =ENTRY_TYPE)
-
 
 # parse 1 by 1, and attach the space name in the end
 compile_select_index = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","hitsPerc")
@@ -214,9 +213,9 @@ Interpro_Results_inner_005_preg <-
 
 require(openxlsx)
 Interpro_Enrich_Regression_005 <- list("Full_join" = Interpro_Results_full_005_reg, "Inner_join" = Interpro_Results_inner_005_reg)
-write.xlsx(Interpro_Enrich_Regression_005,file = "Interpro_Enrich_Regression_005_0925_withFamily2.xlsx")
+#write.xlsx(Interpro_Enrich_Regression_005,file = "Interpro_Enrich_Regression_005_0925_withFamily2.xlsx")
 Interpro_Enrich_Pregnancy_005 <- list("Full_join" = Interpro_Results_full_005_preg, "Inner_join" = Interpro_Results_inner_005_preg)
-write.xlsx(Interpro_Enrich_Pregnancy_005,file = "Interpro_Enrich_Pregnancy_005_0925_withFamily2.xlsx")
+#write.xlsx(Interpro_Enrich_Pregnancy_005,file = "Interpro_Enrich_Pregnancy_005_0925_withFamily2.xlsx")
 
 
 
@@ -240,10 +239,8 @@ attributes_try = c("external_gene_name","entrezgene_accession","entrezgene_id") 
 #,"reactome","reactome_gene")
 # "entrezgene_trans_name"
 gene_try = getBM(attributes=attributes_try,mart = ensembl_try)
-
+#
 match_source = dplyr::select(gene_try,external_gene_name,entrezgene_id)
-
-
 
 for (i in c(1:5)){
   tmp1 = unlist(sig_genes_all[[i]])
@@ -286,8 +283,8 @@ for (i in c(1:5)){
 
 # print out
 require(openxlsx)
-write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
-write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
+#write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
+#write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
 
 # Keep only the entrez ID: then we have one vector for each element of the list (some format as always)
 Sig_list_out_entrez = list()
@@ -298,17 +295,87 @@ for (i in c(1:5)){
   Total_list_out_entrez[[i]] = data.frame(Total_list_out[[i]])$entrezgene_id
   names(Total_list_out_entrez)[i] = names(Total_list_out)[i]
 }
-
-
 #str(Total_list_out_entrez)
 #str(Sig_list_out_entrez)
 
-MESH_Enrich_Result1001 = MESH_Enrich(total_genes_all= Total_list_out_entrez_test,
-                                     sig_genes_all = Sig_list_out_entrez_test,
-                                     TestingSubsetNames = TestingSubsetNames_test,
+
+#####################
+##  run analysis   ##
+####################
+# just in case that does not work
+keyword = "MESH_Enrichment_1001"
+DB = paste(keyword,".RData",sep = "")
+load(DB)
+###
+MESH_Enrich_Result1001 = MESH_Enrich(total_genes_all= Total_list_out_entrez,
+                                     sig_genes_all = Sig_list_out_entrez,
+                                     TestingSubsetNames = TestingSubsetNames,
                                      Meshthres = 0.05,
                                      dataset="MeSH.Bta.eg.db",
                                      keyword = "MESH_Enrichment_1001")
-                   
-                                      
-                   
+#######################################################################################
+#                          7. Conversion to EntrezID　(use above)                     #
+#                                Reactome Enrich                                      #
+#######################################################################################
+# Get data from web (to be specified)
+
+# Read in database
+# lowest_path
+NCBI2Reactome_lowest_path = read.csv("NCBI2Reactome.txt",sep = "\t",header = F)
+NCBI2Reactome_lowest_path_bt = dplyr::filter(NCBI2Reactome_lowest_path, V6 == "Bos taurus") %>% 
+  dplyr::select(V1,V2,V4,V5,V6) %>% 
+  dplyr::rename(EntrezID = V1,ReactomeID = V2,Reactome_Description = V4, Source = V5,Species = V6)
+#head(NCBI2Reactome_lowest_path_bt,10)
+# all_path
+NCBI2Reactome_all_path = read.csv("NCBI2Reactome_All_Levels.txt",sep = "\t",header = F)
+NCBI2Reactome_all_path_bt = dplyr::filter(NCBI2Reactome_all_path,V6 == "Bos taurus") %>% 
+  dplyr::select(V1,V2,V4,V5,V6) %>% 
+  rename(EntrezID = V1,ReactomeID = V2,Reactome_Description = V4, Source = V5,Species = V6)
+#head(NCBI2Reactome_all_path_bt)
+# all_react
+NCBI2Reactome_all_react = read.csv("NCBI2Reactome_PE_Reactions.txt",sep = "\t",header = F)
+NCBI2Reactome_all_react_bt = dplyr::filter(NCBI2Reactome_all_react,V8 == "Bos taurus") %>% 
+  dplyr::select(V1,V2,V3,V4,V6,V7,V8) %>% 
+  dplyr::rename(EntrezID = V1,ReactomeID = V2, 
+                Reaction_Description = V3,
+                ProteinID = V4,
+                Protein_Description = V6,
+                Source = V7, Species = V8)
+
+# turn data input as charactor
+NCBI2Reactome_all_react_bt[] <-   lapply(NCBI2Reactome_all_react_bt, function(x) if(is.factor(x)) as.character(x) else x)
+NCBI2Reactome_lowest_path_bt[] <- lapply(NCBI2Reactome_lowest_path_bt, function(x) if(is.factor(x)) as.character(x) else x)
+NCBI2Reactome_all_path_bt[] <-   lapply(NCBI2Reactome_all_path_bt, function(x) if(is.factor(x)) as.character(x) else x)
+# data massage done 
+
+###
+### just for testing
+#Total_list_out_entrez_test = Total_list_out_entrez[1:2]
+#Sig_list_out_entrez_test = Sig_list_out_entrez[1:2]
+#TestingSubsetNames
+#InputSource = NCBI2Reactome_all_react_bt
+## testing ends
+
+## all react
+Reactome_Enrich_all_react_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
+                                                sig_genes_all=Sig_list_out_entrez,
+                                                TestingSubsetNames = TestingSubsetNames,
+                                                InputSource=  NCBI2Reactome_all_react_bt,
+                                                Reacthres = 0.05,
+                                                keyword = "Reactome_Enrichment_all_react_1001")
+## lowest path
+Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
+                                                 sig_genes_all=Sig_list_out_entrez,
+                                                 TestingSubsetNames = TestingSubsetNames,
+                                                 InputSource=  NCBI2Reactome_alowest_path_bt,
+                                                 Reacthres = 0.05,
+                                                 keyword = "Reactome_Enrich_lowest_path_1001")
+## all path
+Reactome_Enrich_all_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
+                                                   sig_genes_all=Sig_list_out_entrez,
+                                                   TestingSubsetNames = TestingSubsetNames,
+                                                   InputSource=  NCBI2Reactome_all_path_bt,
+                                                   Reacthres = 0.05,
+                                                   keyword = "Reactome_Enrich_all_path_1001")
+
+#########################################################################################################################
