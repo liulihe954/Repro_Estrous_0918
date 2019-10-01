@@ -300,7 +300,15 @@ for (i in c(1:5)){
 }
 
 
-str(Total_list_out_entrez)
-str(Sig_list_out_entrez)
+#str(Total_list_out_entrez)
+#str(Sig_list_out_entrez)
 
-
+MESH_Enrich_Result1001 = MESH_Enrich(total_genes_all= Total_list_out_entrez_test,
+                                     sig_genes_all = Sig_list_out_entrez_test,
+                                     TestingSubsetNames = TestingSubsetNames_test,
+                                     Meshthres = 0.05,
+                                     dataset="MeSH.Bta.eg.db",
+                                     keyword = "MESH_Enrichment_1001")
+                   
+                                      
+                   
