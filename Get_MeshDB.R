@@ -4,7 +4,7 @@ library(tidyverse);library(gage);library(magrittr)
 #library(ggplot2);library(biomaRt) # load pkg
 # raw data for retrive MESHid and all details linked
 KEY = keys(MeSH.db, keytype = "MESHID")
-List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
+List = MeSHDbi::select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
 #List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
 Match_List = dplyr::select(List, MESHID, MESHTERM)
 library(MeSH.Bta.eg.db)
