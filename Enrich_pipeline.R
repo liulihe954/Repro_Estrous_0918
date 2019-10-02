@@ -305,9 +305,10 @@ for (i in c(1:5)){
 ##  run analysis   ##
 ####################
 # just in case that does not work
-keyword = "MESH_Enrichment_1001"
+keyword = "MeshDB"
 DB = paste(keyword,".RData",sep = "")
 load(DB)
+
 ###
 MESH_Enrich_Result1001 = MESH_Enrich(total_genes_all= Total_list_out_entrez,
                                      sig_genes_all = Sig_list_out_entrez,
