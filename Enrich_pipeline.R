@@ -241,7 +241,9 @@ attributes_try = c("external_gene_name","entrezgene_accession","entrezgene_id") 
 gene_try = getBM(attributes=attributes_try,mart = ensembl_try)
 #
 match_source = dplyr::select(gene_try,external_gene_name,entrezgene_id)
-
+#
+Sig_list_out = list()
+Total_list_out = list()
 for (i in c(1:5)){
   tmp1 = unlist(sig_genes_all[[i]])
   for (n in seq_along(tmp1)){
