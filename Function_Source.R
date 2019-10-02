@@ -108,9 +108,34 @@ Go_Enrich_Plot = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",GOthres)
   message("Nice! - GO enrichment finished and data saved")}
+#########################################################################################################################
+#########################################################################################################################
+Parse_GO_Results = function(GO_results_b){
+  all_enrich_GO = data.frame(ID=character(),
+                             Description=character(),
+                             GeneRatio=character(),
+                             BgRatio=character(),
+                             pvalue=numeric(),
+                             p.adjust=numeric(),
+                             qvalue=numeric(),
+                             geneID=character(),
+                             Count=numeric(),
+                             stringsAsFactors=FALSE)
+  for (i in 1:length(GO_results_b)){
+    len = dim(data.frame(GO_results_b[i]))[1]
+    if (len> 0){
+      all_enrich_GO = rbind(all_enrich_GO,data.frame(GO_results_b[i]))
+    }
+  }
+  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
+  total_hits = dim(all_enrich_GO)[1]
+  total_modules = length(GO_results_b)
+  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
+  return(ParseResults = all_enrich_GO)
+}
+#########################################################################################################################
+#########################################################################################################################
 
-#########################################################################################################################
-#########################################################################################################################
 ReduceDim_GO_Plot = function(Enrich_Out,
                              GOthres = 0.001,
                              label_size1 = 0.4,
@@ -206,7 +231,7 @@ ReduceDim_GO_Plot = function(Enrich_Out,
 }
 #########################################################################################################################
 #########################################################################################################################
-Parse__Results = function(KEGG_results_b){
+Parse_Results = function(KEGG_results_b){
   all_enrich_KEGG = data.frame(ID=character(),
                                Description=character(),
                                GeneRatio=character(),
