@@ -113,18 +113,19 @@ Go_Enrich_Plot = function(total.genes,
 Parse_GO_Results = function(GO_results_b){
   all_enrich_GO = data.frame(ID=character(),
                              Description=character(),
-                             GeneRatio=character(),
-                             BgRatio=character(),
+                             Total_gene=numeric(),
+                             Significant_gene=numeric(),
                              pvalue=numeric(),
-                             p.adjust=numeric(),
-                             qvalue=numeric(),
-                             geneID=character(),
-                             Count=numeric(),
+                             ExternalLoss_total = character(),
+                             InternalLoss_total = character(),
+                             HitPerc = numeric(),
                              stringsAsFactors=FALSE)
   for (i in 1:length(GO_results_b)){
     len = dim(data.frame(GO_results_b[i]))[1]
     if (len> 0){
-      all_enrich_GO = rbind(all_enrich_GO,data.frame(GO_results_b[i]))
+      tmp = data.frame(GO_results_b[i])
+      names(tmp) = names(all_enrich_GO)
+      all_enrich_GO = rbind(all_enrich_GO,tmp)
     }
   }
   #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
