@@ -565,6 +565,7 @@ Reactome_Enrich = function(total_genes_all,
   message("Total Number of Reactome to check: ",length(ReactomeID)," with total number of names: ",length(ReactomeName))
   #pdf(paste(trimws(keyword),".pdf",sep = ""))
   for (i in c(1:(length(TestingSubsetNames)))){
+    #str(sig.genes)
     message("working on dataset #",i," - ",TestingSubsetNames[i])
     sig.genes = unlist(sig_genes_all[i]);attributes(sig.genes) = NULL
     total.genes = unlist(total_genes_all[i]);attributes(total.genes) = NULL
