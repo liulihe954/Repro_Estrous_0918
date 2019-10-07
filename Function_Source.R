@@ -4,6 +4,32 @@ library(readxl);library(ggplot2);library(biomaRt);library(tidyverse)
 library(biomaRt);library(GOSemSim);library(corrplot);library(limma)
 ##############################################################################################################
 ##############################################################################################################
+Parse_Results = function(Results_List,keyword = "Which D.B"){
+  all_enrich = data.frame(ID=character(),
+                          Description=character(),
+                          Total_gene=numeric(),
+                          Significant_gene=numeric(),
+                          pvalue=numeric(),
+                          ExternalLoss_total = character(),
+                          InternalLoss_total = character(),
+                          HitPerc = numeric(),
+                          stringsAsFactors=FALSE)
+  for (i in 1:length(Results_List)){
+    len = dim(data.frame(Results_List[i]))[1]
+    if (len> 0){
+      tmp = data.frame(Results_List[i])
+      names(tmp) = names(all_enrich)
+      all_enrich = rbind(all_enrich,tmp)
+    }
+  }
+  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
+  total_hits = dim(all_enrich)[1]
+  total_modules = length(Results_List)
+  print(paste("In database: ",keyword,"-",total_hits,"hits found in",total_modules,"tested modules: ",names(Results_List)))
+  return(ParseResults = all_enrich)
+}
+##############################################################################################################
+##############################################################################################################
 Go_Enrich_Plot = function(total.genes,
                           sig.genes,
                           TestingSubsetNames,
@@ -110,30 +136,30 @@ Go_Enrich_Plot = function(total.genes,
   message("Nice! - GO enrichment finished and data saved")}
 #########################################################################################################################
 #########################################################################################################################
-Parse_GO_Results = function(GO_results_b){
-  all_enrich_GO = data.frame(ID=character(),
-                             Description=character(),
-                             Total_gene=numeric(),
-                             Significant_gene=numeric(),
-                             pvalue=numeric(),
-                             ExternalLoss_total = character(),
-                             InternalLoss_total = character(),
-                             HitPerc = numeric(),
-                             stringsAsFactors=FALSE)
-  for (i in 1:length(GO_results_b)){
-    len = dim(data.frame(GO_results_b[i]))[1]
-    if (len> 0){
-      tmp = data.frame(GO_results_b[i])
-      names(tmp) = names(all_enrich_GO)
-      all_enrich_GO = rbind(all_enrich_GO,tmp)
-    }
-  }
+#Parse_GO_Results = function(GO_results_b){
+#  all_enrich_GO = data.frame(ID=character(),
+#                             Description=character(),
+#                             Total_gene=numeric(),
+#                             Significant_gene=numeric(),
+#                             pvalue=numeric(),
+#                             ExternalLoss_total = character(),
+#                             InternalLoss_total = character(),
+#                             HitPerc = numeric(),
+#                             stringsAsFactors=FALSE)
+#  for (i in 1:length(GO_results_b)){
+#    len = dim(data.frame(GO_results_b[i]))[1]
+#    if (len> 0){
+#      tmp = data.frame(GO_results_b[i])
+#      names(tmp) = names(all_enrich_GO)
+#      all_enrich_GO = rbind(all_enrich_GO,tmp)
+#    }
+#  }
   #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-  total_hits = dim(all_enrich_GO)[1]
-  total_modules = length(GO_results_b)
-  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
-  return(ParseResults = all_enrich_GO)
-}
+#  total_hits = dim(all_enrich_GO)[1]
+#  total_modules = length(GO_results_b)
+#  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
+#  return(ParseResults = all_enrich_GO)
+#}
 #########################################################################################################################
 #########################################################################################################################
 ReduceDim_GO_Plot = function(Enrich_Out,
@@ -231,30 +257,29 @@ ReduceDim_GO_Plot = function(Enrich_Out,
 }
 #########################################################################################################################
 #########################################################################################################################
-Parse_Results = function(KEGG_results_b){
-  all_enrich_KEGG = data.frame(ID=character(),
-                               Description=character(),
-                               GeneRatio=character(),
-                               BgRatio=character(),
-                               pvalue=numeric(),
-                               p.adjust=numeric(),
-                               qvalue=numeric(),
-                               geneID=character(),
-                               Count=numeric(),
-                               stringsAsFactors=FALSE)
-  for (i in 1:length(KEGG_results_b)){
-    len = dim(data.frame(KEGG_results_b[i]))[1]
-    if (len> 0){
-      all_enrich_KEGG = rbind(all_enrich_KEGG,data.frame(KEGG_results_b[i]))
-    }
-  }
+#Parse_Results = function(KEGG_results_b){
+#  all_enrich_KEGG = data.frame(ID=character(),
+#                               Description=character(),
+#                               GeneRatio=character(),
+#                               BgRatio=character(),
+#                               pvalue=numeric(),
+#                               p.adjust=numeric(),
+#                               qvalue=numeric(),
+#                               geneID=character(),
+#                               Count=numeric(),
+#                               stringsAsFactors=FALSE)
+#  for (i in 1:length(KEGG_results_b)){
+#    len = dim(data.frame(KEGG_results_b[i]))[1]
+#    if (len> 0){
+#      all_enrich_KEGG = rbind(all_enrich_KEGG,data.frame(KEGG_results_b[i]))
+#    }
+#  }
   #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-  total_hits = dim(all_enrich_KEGG)[1]
-  total_modules = length(KEGG_results_b)
-  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
-  return(ParseResults = all_enrich_KEGG)
-}
-
+#  total_hits = dim(all_enrich_KEGG)[1]
+#  total_modules = length(KEGG_results_b)
+#  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
+#  return(ParseResults = all_enrich_KEGG)
+#}
 #########################################################################################################################
 #########################################################################################################################
 InterPro_Enrich = function(total.genes,
@@ -374,20 +399,20 @@ InterPro_Enrich = function(total.genes,
   message("Nice! - Interpro enrichment finished and data saved")}
 
 #########################################################################################################################
-Parse_Interpro_Results = function(Interpro_results_b){
-  all_enrich_Interpro = data.frame()
-  for (i in 1:length(Interpro_results_b)){
-    len = dim(data.frame(Interpro_results_b[i]))[1]
-    if (len> 0){
-      all_enrich_Interpro = rbind(all_enrich_Interpro,data.frame(Interpro_results_b[i]))
-    }
-  }
+#Parse_Interpro_Results = function(Interpro_results_b){
+#  all_enrich_Interpro = data.frame()
+#  for (i in 1:length(Interpro_results_b)){
+#    len = dim(data.frame(Interpro_results_b[i]))[1]
+#    if (len> 0){
+#      all_enrich_Interpro = rbind(all_enrich_Interpro,data.frame(Interpro_results_b[i]))
+#    }
+#  }
   #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-  total_hits = dim(all_enrich_Interpro)[1]
-  total_modules = length(Interpro_results_b)
-  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
-  return(ParseResults = all_enrich_Interpro)
-}
+#  total_hits = dim(all_enrich_Interpro)[1]
+#  total_modules = length(Interpro_results_b)
+#  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
+#  return(ParseResults = all_enrich_Interpro)
+#}
 #########################################################################################################################
 #########################################################################################################################
 MESH_Enrich = function(total_genes_all,
@@ -409,8 +434,9 @@ MESH_Enrich = function(total_genes_all,
   Mesh_results_b = list()
   Mesh_results_b_raw = list()
   library(MeSH.db);library(MeSH.Bta.eg.db);library(tidyverse);library(gage);library(magrittr)
-  library(ggplot2);library(biomaRt) # load pkg
+  library(ggplot2);library(biomaRt);library(MeSH.Bta.eg.db)
   
+  #========================================================================#
   ### raw data for retrive MESHid and all details linked
   #
   #KEY = keys(MeSH.db, keytype = "MESHID")
@@ -419,31 +445,26 @@ MESH_Enrich = function(total_genes_all,
   #Match_List = dplyr::select(List, MESHID, MESHTERM)
   ##head(Match_List) 
   ### Prepare Bta database
-  #
-  library(MeSH.Bta.eg.db)
+  
   #key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
   #list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
   #  dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY == MeshCate) %>% 
   #  dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
-  #
+  #========================================================================#
   # alternatively
   keyword_outer = "MeshDB"
   DB = paste(keyword_outer,".RData",sep = "")
   load(DB)
-  #
+  
   # Get index
   genesMesh = unique(list_Bta$GENEID)
   MeshID = unique(list_Bta$MESHID)
-  #MeshID = MeshID[1:1000]
   MeshTerm = unique(list_Bta$MESHTERM)
   #length(genesGO)
   message("Total Number of module/subsets to check: ",length(TestingSubsetNames))
   message("Total Number of Mesh to check: ",length(MeshID)," with total number of names: ",length(MeshTerm))
   #pdf(paste(trimws(keyword),".pdf",sep = ""))
   for (i in c(1:(length(TestingSubsetNames)))){
-    # i = 2
-    # sig.genes = Sig_list_out_entrez_test
-    # total.genes = Total_list_out_entrez_test
     message("working on dataset #",i," - ",TestingSubsetNames[i])
     sig.genes = unlist(sig_genes_all[i]);attributes(sig.genes) = NULL
     total.genes = unlist(total_genes_all[i]);attributes(total.genes) = NULL
@@ -462,7 +483,6 @@ MESH_Enrich = function(total_genes_all,
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in 1:length(MeshID)){
       if (j%%1000 == 0) {message("tryingd on MeshID ",j," - ",MeshID[j]," - ",MeshTerm[j])}
-      #head(list_Bta)
       gENEs = subset(list_Bta, MESHID == MESHID[j])$GENEID
       m = length(total.genes[total.genes %in% gENEs]) # genes from target  and in our dataset
       s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target  also in the non-preserved module
@@ -522,24 +542,31 @@ MESH_Enrich = function(total_genes_all,
           " at the significance level of ",Meshthres)
   message("Nice! - Mesh enrichment finished and data saved")}
 
-
 #########################################################################################################################
-Parse_Mesh_Results = function(Mesh_results_b){
-  all_enrich_Mesh = data.frame()
-  for (i in 1:length(Mesh_results_b)){
-    len = dim(data.frame(Mesh_results_b[i]))[1]
-    if (len> 0){
-      all_enrich_Mesh = rbind(all_enrich_Mesh,data.frame(Mesh_results_b[i]))
-    }
-  }
+#Parse_Mesh_Results = function(Mesh_results_b){
+#  all_enrich_Mesh = data.frame(ID=character(),
+#                               Description=character(),
+#                               Total_gene=numeric(),
+#                               Significant_gene=numeric(),
+#                               pvalue=numeric(),
+#                               ExternalLoss_total = character(),
+#                               InternalLoss_total = character(),
+#                               HitPerc = numeric(),
+#                               stringsAsFactors=FALSE)
+#  for (i in 1:length(Mesh_results_b)){
+#    len = dim(data.frame(Mesh_results_b[i]))[1]
+#    if (len> 0){
+#      tmp = data.frame(Mesh_results_b[i])
+#      names(tmp) = names(all_enrich_Mesh)
+#      all_enrich_Mesh = rbind(all_enrich_Mesh,tmp)
+#    }
+#  }
   #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-  total_hits = dim(all_enrich_Mesh)[1]
-  total_modules = length(Mesh_results_b)
-  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
-  return(ParseResults = all_enrich_Mesh)
-}
-
-
+#  total_hits = dim(all_enrich_Mesh)[1]
+#  total_modules = length(Mesh_results_b)
+#  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
+#  return(ParseResults = all_enrich_Mesh)
+#}
 #########################################################################################################################
 #########################################################################################################################
 Reactome_Enrich = function(total_genes_all,
@@ -644,20 +671,17 @@ Reactome_Enrich = function(total_genes_all,
   message("Nice! - Reactome enrichment finished and data saved")}
 
 #########################################################################################################################
-Parse_Reactome_Results = function(Mesh_results_b){
-  all_enrich_Mesh = data.frame()
-  for (i in 1:length(Mesh_results_b)){
-    len = dim(data.frame(Mesh_results_b[i]))[1]
-    if (len> 0){
-      all_enrich_Mesh = rbind(all_enrich_Mesh,data.frame(Mesh_results_b[i]))
-    }
-  }
-  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-  total_hits = dim(all_enrich_Mesh)[1]
-  total_modules = length(Mesh_results_b)
-  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
-  return(ParseResults = all_enrich_Mesh)
-} # did change name because its all the same
-
-
-
+#Parse_Reactome_Results = function(Mesh_results_b){
+#  all_enrich_Mesh = data.frame()
+#  for (i in 1:length(Mesh_results_b)){
+#    len = dim(data.frame(Mesh_results_b[i]))[1]
+#    if (len> 0){
+#      all_enrich_Mesh = rbind(all_enrich_Mesh,data.frame(Mesh_results_b[i]))
+#    }
+#  }
+#  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
+#  total_hits = dim(all_enrich_Mesh)[1]
+#  total_modules = length(Mesh_results_b)
+#  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
+#  return(ParseResults = all_enrich_Mesh)
+#} # did change name because its all the same
