@@ -244,62 +244,7 @@ match_source = dplyr::select(gene_try,external_gene_name,entrezgene_id)
 #
 Sig_list_out = list()
 Total_list_out = list()
-for (i in c(1:5)){
-  tmp1 = unlist(sig_genes_all[[i]])
-  for (n in seq_along(tmp1)){
-    trans = alias2Symbol(tmp1[n],species = "Bt", expand.symbols = F)
-    if (length(trans) == 0){tmp1[n] = tmp1[n]}
-    else {tmp1[n] = trans}
-  }
-  tmp2 = unlist(total_genes_all[[i]])
-  for (m in seq_along(tmp2)){
-    trans = alias2Symbol(tmp2[m],species = "Bt", expand.symbols = F)
-    if (length(trans) == 0){tmp2[n] = tmp2[n]}
-    else {tmp2[n] = trans}
-  }
-  #
-  origin1 = data.frame(sig_genes_all[[i]])
-  origin2 = data.frame(total_genes_all[[i]])
-  #names(tmp1) = names(tmp2) = "external_gene_name"
-  test_inner1 = data.frame(origin = origin1,name_trans = tmp1)
-  test_inner2 = data.frame(origin = origin2,name_trans = tmp2)
-  test_inner1 = dplyr::left_join(test_inner1,match_source,by=c("name_trans" = "external_gene_name"))
-  test_inner2 = dplyr::left_join(test_inner2,match_source,by=c("name_trans" = "external_gene_name"))
-  # substitue entrez id with ### following "LOC"
-  index1 = is.na(test_inner1$entrezgene_id)
-  test_inner1$entrezgene_id[index1] = sub("^LOC*","",test_inner1$gene)[index1]
-  index2 = is.na(test_inner2$entrezgene_id)
-  test_inner2$entrezgene_id[index2] = sub("^LOC*","",test_inner2$gene)[index2]
-  #
-  Sig_list_out[[i]] = test_inner1
-  Total_list_out[[i]] = test_inner2
-  names(Sig_list_out)[i] = names(sig_genes_all)[i]
-  names(Total_list_out)[i] = names(total_genes_all)[i]
-  t1 = table(is.na(test_inner1[,3]))
-  message("this is for sig")
-  print(t1)
-  t2 = table(is.na(test_inner2[,3]))
-  message("this is for total")
-  print(t2)
-}
 
-# print out
-require(openxlsx)
-#write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
-#write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
-
-# Keep only the entrez ID: then we have one vector for each element of the list (some format as always)
-Sig_list_out_entrez = list()
-Total_list_out_entrez = list()
-for (i in c(1:5)){
-  Sig_list_out_entrez[[i]] = data.frame(Sig_list_out[[i]])$entrezgene_id
-  names(Sig_list_out_entrez)[i] = names(Sig_list_out)[i]
-  Total_list_out_entrez[[i]] = data.frame(Total_list_out[[i]])$entrezgene_id
-  names(Total_list_out_entrez)[i] = names(Total_list_out)[i]
-}
-
-#str(Total_list_out_entrez)
-#str(Sig_list_out_entrez)
 
 #####################
 ##  run analysis   ##
@@ -308,191 +253,6 @@ for (i in c(1:5)){
 keyword = "MeshDB"
 DB = paste(keyword,".RData",sep = "")
 load(DB)
-
-
-###
-str(Total_list_out_entrez_test)
-Total_list_out_entrez_test = Total_list_out_entrez[1:2]
-Sig_list_out_entrez_test = Sig_list_out_entrez[1:2]
-TestingSubsetNames = TestingSubsetNames[1:2]
-MESH_Enrich_Result1003 = MESH_Enrich(Total_list_out_entrez,
-                                     Sig_list_out_entrez,
-                                     TestingSubsetNames,
-                                     Meshthres = 0.05,
-                                     dataset="MeSH.Bta.eg.db",
-                                     keyword = "MESH_Enrichment_test_1007")
-load("MESH_Enrichment_test_1007.RData")
-
-
-
-summary(Mesh_results_b_raw[[2]]$pvalue_r)
-names(Mesh_results_b_raw[[2]])
-
-test = Parse_Results(Mesh_results_b_raw[[2]], keyword = "test_2") #%>% dplyr::filter(pvalue_r<=0.05)
-
-test = data.frame(Mesh_results_b_raw[[2]])
-test = dplyr::filter(test,pvalue_r<=0.05)
-head(test,20)
-
-all_enrich = data.frame(ID=character(),
-                        Description=character(),
-                        Total_gene=numeric(),
-                        Significant_gene=numeric(),
-                        pvalue=numeric(),
-                        ExternalLoss_total = character(),
-                        InternalLoss_total = character(),
-                        HitPerc = numeric(),
-                        stringsAsFactors=FALSE)
-for (i in 1:length(Results_List)){
-  len = dim(data.frame(Results_List[i]))[1]
-  if (len> 0){
-    tmp = data.frame(Results_List[i])
-    names(tmp) = names(all_enrich)
-    all_enrich = rbind(all_enrich,tmp)
-  }
-}
-
-
-MESH_Enrich = function(total_genes_all,
-                       sig_genes_all,
-                       TestingSubsetNames,
-                       Meshthres = 0.05,
-                       MeshCate = c("D","G"),
-                       #biomart="ensembl",
-                       dataset="MeSH.Bta.eg.db",
-                       #dataset= "btaurus_gene_ensembl",
-                       #Identifier = "external_gene_name",
-                       #attributes = c("ensembl_gene_id","external_gene_name","entrezgene_id"),
-                       keyword = "MESH_Enrichment"){
-  #total.genes = Total_list_out_entrez_test
-  #sig.genes = Sig_list_out_entrez_test
-  #TestingSubsetNames = TestingSubsetNames_test
-  total_enrich = 0                        
-  raw_pvalue_all = numeric()
-  Mesh_results_b = list()
-  Mesh_results_b_raw = list()
-  library(MeSH.db);library(MeSH.Bta.eg.db);library(tidyverse);library(gage);library(magrittr)
-  library(ggplot2);library(biomaRt);library(MeSH.Bta.eg.db)
-  #========================================================================#
-  ### raw data for retrive MESHid and all details linked
-  #
-  #KEY = keys(MeSH.db, keytype = "MESHID")
-  #List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
-  ##List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
-  #Match_List = dplyr::select(List, MESHID, MESHTERM)
-  ##head(Match_List) 
-  ### Prepare Bta database
-  
-  #key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
-  #list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
-  #  dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY == MeshCate) %>% 
-  #  dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
-  #========================================================================#
-  # alternatively
-  
-  keyword_outer = "MeshDB"
-  DB = paste(keyword_outer,".RData",sep = "")
-  load(DB)
-  
-  # Get index
-  genesMesh = unique(list_Bta$GENEID)
-  MeshID = unique(list_Bta$MESHID);MeshID = MeshID[1:1000] # delete
-  MeshTerm = unique(list_Bta$MESHTERM)
-  #head(unique(MeshID),200)
-  
-  #length(genesGO)
-  message("Total Number of module/subsets to check: ",length(TestingSubsetNames))
-  message("Total Number of Mesh to check: ",length(MeshID)," with total number of names: ",length(MeshTerm))
-  #pdf(paste(trimws(keyword),".pdf",sep = ""))
-  for (i in c(1:(length(TestingSubsetNames)))){
-    #i = 1
-    #Sig_list_out_entrez = list()
-    #Total_list_out_entrez = list()
-    #sig.genes = unlist(Sig_list_out_entrez[i]);attributes(sig.genes) = NULL
-    #total.genes = unlist(Total_list_out_entrez[i]);attributes(total.genes) = NULL
-    message("working on dataset #",i," - ",TestingSubsetNames[i])
-    sig.genes = unlist(sig_genes_all[i]);attributes(sig.genes) = NULL
-    total.genes = unlist(total_genes_all[i]);attributes(total.genes) = NULL
-    # total genes in the non-preserved module
-    N = length(total.genes[total.genes %in% genesMesh])
-    S = length(sig.genes[sig.genes %in% genesMesh]) #
-    
-    ExternalLoss_total = paste((length(total.genes) - N),round((length(total.genes) - N)/N,3),sep = "/")
-    ExternalLoss_sig = paste((length(sig.genes) - S),round((length(sig.genes) - S)/S,3),sep = "/")
-    
-    out = data.frame(MeshID=character(),
-                     MeshTerm=character(),
-                     totalG=numeric(),
-                     sigG=numeric(),
-                     Pvalue=numeric(),
-                     ExternalLoss_total = character(),
-                     ExternalLoss_sig = character())
-    message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
-    for(j in 1:length(MeshID)){
-      #j = 1333
-      if (j%%1000 == 0) {message("tryingd on MeshID ",j," - ",MeshID[j]," - ",MeshTerm[j])}
-      gENEs = subset(list_Bta, MESHID == MESHID[j])$GENEID
-      m = length(total.genes[total.genes %in% gENEs]) # genes from target  and in our dataset
-      s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target  also in the non-preserved module
-      M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
-      Pval = round(fisher.test(M, alternative ="g")$p.value,100)
-      #Pval
-      tmp = data.frame(MeshID= MeshID[j], 
-                       MeshTerm = MeshTerm[j], 
-                       totalG = m, 
-                       sigG = s, 
-                       Pvalue = Pval, 
-                       ExternalLoss_total = ExternalLoss_total,
-                       ExternalLoss_sig = ExternalLoss_sig)
-      out = rbind(out,tmp)}
-    # put all palues in a box
-    raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
-    # raw complilation starts
-    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
-    final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
-    Mesh_results_b_raw[[i]] = final_raw; names(Mesh_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched Mesh raw")
-    # raw complilation ends
-    # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
-    ot = subset(out,totalG > 4 & Pvalue <= Meshthres)
-    final = ot[order(ot$Pvalue),];colnames(final) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
-    final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
-    Mesh_results_b[[i]] = final;names(Mesh_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched Mesh")
-    # selection ends
-    message("Significant Enrichment Hits:",nrow(final))
-    total_enrich = total_enrich + nrow(final)
-    ##
-    #   print(final %>% 
-    #           top_n(dim(final)[1], wt= -pvalue)%>% 
-    #           ggplot(final, aes( x = hitsPerc,
-    #                      y = GO_Name,
-    #                      colour = pvalue,
-    #                      size = Significant_Genes)) +
-    #           geom_point() +
-    #           theme_gray()+
-    #          labs(title= paste("GO Enrichment in module",
-    #                              TestingSubsetNames[i])), 
-    #                              x="Hits (%)", y="GO term", 
-    #                              colour="p value", size="Count")+
-    #      theme(axis.text.x = element_text(size = 8,color = "black",vjust = 0.5, hjust = 0.5))+
-    #      theme(axis.text.y = element_text(size = 8,color = "black",vjust = 0.5, hjust = 0.5))+
-    #      theme(axis.title.x = element_text(size = 8,color = "black",vjust = 0.5, hjust = 0.5))+
-    #      theme(axis.title.y = element_text(size = 8, color = "black",vjust = 0.5, hjust = 0.5))+
-    #      theme(plot.title = element_text(size = 12,color = "black", face = "bold", vjust = 0.5, hjust = 0.5))
-  }
-  #  dev.off()
-  raw_pvalue_index = seq(0.05,1,by=0.05)
-  raw_pvalue_sum = numeric()
-  for( z in seq_along(raw_pvalue_index)){raw_pvalue_sum[z] = length(which(raw_pvalue_all <= raw_pvalue_index[z]))}
-  raw_pvalue_distribution = data.frame(index = raw_pvalue_index,counts_Mesh = raw_pvalue_sum)
-  #raw_pvalue_distribution
-  save(Mesh_results_b, Mesh_results_b_raw, raw_pvalue_distribution, file = paste(trimws(keyword),".RData",sep = ""))
-  message(total_enrich," significant MeshIDs found within ",
-          length(TestingSubsetNames)," modules/subsets", 
-          " at the significance level of ",Meshthres)
-  message("Nice! - Mesh enrichment finished and data saved")}
-
-
-
 
 
 ######################################
@@ -506,12 +266,79 @@ library(MeSH.Bta.eg.db)
 # keys return the keys for the database contained in the MeSHdb object
 key.symbol = keys(org.Bt.eg.db,  keytype = c("SYMBOL"))
 entrezUniverse = select(org.Bt.eg.db, as.character(key.symbol), 
-                        columns = c("ENTREZID", "ENSEMBL"),keytype = "SYMBOL")
-entrezUniverse2 <- entrezUniverse[!duplicated(entrezUniverse[,2]),]
-entrezUniverse3 <- entrezUniverse2[!duplicated(entrezUniverse2[,1]),]
+                        columns = c("ENTREZID"),keytype = "SYMBOL") %>% 
+  dplyr::distinct(SYMBOL,.keep_all= TRUE)
+# dim(entrezUniverse)
+#####
+Sig_list_out = list()
+Total_list_out = list()
+library(limma)
+for (i in c(1:5)){
+  ## for sig
+  tmp1 = data.frame(SYMBOL = unlist(sig_genes_all[[i]]))
+  tmp1 = dplyr::left_join(tmp1 ,entrezUniverse, by = c("SYMBOL" = "SYMBOL"))
+  # find the gap
+  gather1 = tmp1$SYMBOL
+  for (n in seq_along(tmp1$ENTREZID)){
+    if (is.na(tmp1$ENTREZID[n])){
+      trans = alias2Symbol(tmp1$SYMBOL[n],species = "Bt", expand.symbols = F)[1]
+      gather1[n] = trans }
+  }
+  tmp1 = dplyr::mutate(tmp1,limma_cvt = gather1) %>% dplyr::left_join(entrezUniverse, by = c("limma_cvt" = "SYMBOL"),suffix = c("_orig", "_final"))
+  Sig_list_out[[i]] = tmp1
+  
+  ## for total 
+  tmp2 = data.frame(SYMBOL = unlist(total_genes_all[[i]]))
+  tmp2 = dplyr::left_join(tmp2,entrezUniverse,by = c("SYMBOL" = "SYMBOL"))
+  # find the gap
+  gather2 = tmp2$SYMBOL
+  for (n in seq_along(tmp2$ENTREZID)){
+    if (is.na(tmp2$ENTREZID[n])){
+      trans = alias2Symbol(tmp2$SYMBOL[n],species = "Bt", expand.symbols = F)[1]
+      gather2[n] = trans }
+  }
+  tmp2 = dplyr::mutate(tmp2,limma_cvt = gather2) %>% dplyr::left_join(entrezUniverse, by = c("limma_cvt" = "SYMBOL"),suffix = c("_orig", "_final"))
+  Total_list_out[[i]] = tmp2
+}
+
+##
+# Keep only the entrez ID: then we have one vector for each element of the list (some format as always)
+Sig_list_out_entrez = list()
+Total_list_out_entrez = list()
+for (i in c(1:5)){
+  Sig_list_out_entrez[[i]] = unique(na.omit(data.frame(Sig_list_out[[i]])$ENTREZID_final))
+  names(Sig_list_out_entrez)[i] = names(Sig_list_out)[i]
+  Total_list_out_entrez[[i]] = unique(na.omit(data.frame(Total_list_out[[i]])$ENTREZID_final))
+  names(Total_list_out_entrez)[i] = names(Total_list_out)[i]
+}
+## save the convert for next time, it will take some time if run again
+save(Total_list_out,Sig_list_out,Sig_list_out_entrez,Total_list_out_entrez,file = "ConvertName2Entrez.RData")
+load("ConvertName2Entrez.RData")
 
 
+# testing 
+Sig_list_out_entrez_test2 = unlist(Sig_list_out_entrez[[4]]);attributes(Sig_list_out_entrez_test2) = NULL
+Total_list_out_entrez_test2 = unlist(Total_list_out_entrez[[4]]);attributes(Total_list_out_entrez_test2) = NULL
 
+Sig_list_out_entrez_test2 = Sig_list_out_entrez[4]#;attributes(Sig_list_out_entrez_test2) = NULL
+Total_list_out_entrez_test2 = Total_list_out_entrez[4]#;attributes(Total_list_out_entrez_test2) = NULL
+TestingSubsetNames = "test"
+
+test = MESH_Enrich(Total_list_out_entrez_test2,
+                   Sig_list_out_entrez_test2,
+                   TestingSubsetNames,
+                   Meshthres = 0.05,
+                   MeshCate = c("D","G"),
+                   #biomart="ensembl",
+                   dataset="MeSH.Bta.eg.db",
+                   #dataset= "btaurus_gene_ensembl",
+                   #Identifier = "external_gene_name",
+                   #attributes = c("ensembl_gene_id","external_gene_name","entrezgene_id"),
+                   keyword = "MESH_Enrichment_test1007")
+
+load("MESH_Enrichment_test1007.RData")
+
+##
 
 ## FULL GENES
 genes.back = data.frame(total.genes)
@@ -531,26 +358,44 @@ nt = length(geneID2.back[,1])
 cat(paste("Significant Genes:", ns, " and Backgroung Genes:", nt - ns), "\n")
 
 ### MeSH Phenomena and Processes
-sig_genes_all
 # Total_list_out_entrez_test = Total_list_out_entrez[2]
 # Sig_list_out_entrez_test = Sig_list_out_entrez[2]
-Total_list_out_entrez_test2 =unique(unlist(Total_list_out_entrez_test));attributes(Total_list_out_entrez_test2) = NULL
-Sig_list_out_entrez_test2 = unique(unlist(Sig_list_out_entrez_test));attributes(Sig_list_out_entrez_test2) = NULL
-Total_list_out_entrez_test2 = Total_list_out_entrez_test2[Total_list_out_entrez_test2 %in% unique(entrezUniverse3$ENTREZID)]
+Sig_list_out_entrez_test2 = unlist(Sig_list_out_entrez[[4]]);attributes(Sig_list_out_entrez_test2) = NULL
+Total_list_out_entrez_test2 = unlist(Total_list_out_entrez[[4]]);attributes(Total_list_out_entrez_test2) = NULL
 
+
+head(Sig_list_out_entrez_test2);length(Sig_list_out_entrez_test2)
+head(Total_list_out_entrez_test2);length(Total_list_out_entrez_test2)
 
 meshParams <- new("MeSHHyperGParams", 
                   geneIds = Sig_list_out_entrez_test2, 
                   universeGeneIds = Total_list_out_entrez_test2, 
-                  annotation = "MeSH.Bta.eg.db", category = "G", database = "gene2pubmed", 
+                  annotation = "MeSH.Bta.eg.db",
+                  category = c("G"), database = "gene2pubmed", 
                   pvalueCutoff = 0.05, pAdjust = "none")
 
 meshR <- meshHyperGTest(meshParams)
+
 out = data.frame(meshR@ORA$MESHID, meshR@ORA$MESHTERM, 
                  meshR@ORA$Size, meshR@ORA$Count, signif(meshR@ORA$Pvalue,2))
 colnames(out) = c("MeSH_Term_ID", "MeSH_Term_Name", 
                   "Total_Genes", "DE_Genes", "P-value")
 print(unique(out), row.names = F)
 
+#######
+meshParams <- new("MeSHHyperGParams", 
+                  geneIds = Sig_list_out_entrez_test2, 
+                  universeGeneIds = Total_list_out_entrez_test2, 
+                  annotation = "MeSH.Bta.eg.db",
+                  category = c("G"), database = "gene2pubmed", 
+                  pvalueCutoff = 0.05, pAdjust = "none")
+
+str(meshParams)
+meshR <- meshHyperGTest(meshParams)
+out = data.frame(meshR@ORA$MESHID, meshR@ORA$MESHTERM, 
+                 meshR@ORA$Size, meshR@ORA$Count, signif(meshR@ORA$Pvalue,2))
+colnames(out) = c("MeSH_Term_ID", "MeSH_Term_Name", 
+                  "Total_Genes", "DE_Genes", "P-value")
+print(unique(out), row.names = F)
 
 #write.table(unique(out),file="MESH_Phenomena_process.txt",append = F, quote = F,sep ="\t",na = "NA",row.names=F,col.names=T)

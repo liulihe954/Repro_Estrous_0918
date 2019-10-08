@@ -244,78 +244,74 @@ match_source = dplyr::select(gene_try,external_gene_name,entrezgene_id)
 #
 Sig_list_out = list()
 Total_list_out = list()
+library(limma)
 for (i in c(1:5)){
-  tmp1 = unlist(sig_genes_all[[i]])
-  for (n in seq_along(tmp1)){
-    trans = alias2Symbol(tmp1[n],species = "Bt", expand.symbols = F)
-    if (length(trans) == 0){tmp1[n] = tmp1[n]}
-    else {tmp1[n] = trans}
+  ## for sig
+  tmp1 = data.frame(SYMBOL = unlist(sig_genes_all[[i]]))
+  tmp1 = dplyr::left_join(tmp1 ,entrezUniverse, by = c("SYMBOL" = "SYMBOL"))
+  # find the gap
+  gather1 = tmp1$SYMBOL
+  for (n in seq_along(tmp1$ENTREZID)){
+    if (is.na(tmp1$ENTREZID[n])){
+      trans = alias2Symbol(tmp1$SYMBOL[n],species = "Bt", expand.symbols = F)[1]
+      gather1[n] = trans }
   }
-  tmp2 = unlist(total_genes_all[[i]])
-  for (m in seq_along(tmp2)){
-    trans = alias2Symbol(tmp2[m],species = "Bt", expand.symbols = F)
-    if (length(trans) == 0){tmp2[n] = tmp2[n]}
-    else {tmp2[n] = trans}
+  tmp1 = dplyr::mutate(tmp1,limma_cvt = gather1) %>% dplyr::left_join(entrezUniverse, by = c("limma_cvt" = "SYMBOL"),suffix = c("_orig", "_final"))
+  Sig_list_out[[i]] = tmp1
+  
+  ## for total 
+  tmp2 = data.frame(SYMBOL = unlist(total_genes_all[[i]]))
+  tmp2 = dplyr::left_join(tmp2,entrezUniverse,by = c("SYMBOL" = "SYMBOL"))
+  # find the gap
+  gather2 = tmp2$SYMBOL
+  for (n in seq_along(tmp2$ENTREZID)){
+    if (is.na(tmp2$ENTREZID[n])){
+      trans = alias2Symbol(tmp2$SYMBOL[n],species = "Bt", expand.symbols = F)[1]
+      gather2[n] = trans }
   }
-  #
-  origin1 = data.frame(sig_genes_all[[i]])
-  origin2 = data.frame(total_genes_all[[i]])
-  #names(tmp1) = names(tmp2) = "external_gene_name"
-  test_inner1 = data.frame(origin = origin1,name_trans = tmp1)
-  test_inner2 = data.frame(origin = origin2,name_trans = tmp2)
-  test_inner1 = dplyr::left_join(test_inner1,match_source,by=c("name_trans" = "external_gene_name"))
-  test_inner2 = dplyr::left_join(test_inner2,match_source,by=c("name_trans" = "external_gene_name"))
-  # substitue entrez id with ### following "LOC"
-  index1 = is.na(test_inner1$entrezgene_id)
-  test_inner1$entrezgene_id[index1] = sub("^LOC*","",test_inner1$gene)[index1]
-  index2 = is.na(test_inner2$entrezgene_id)
-  test_inner2$entrezgene_id[index2] = sub("^LOC*","",test_inner2$gene)[index2]
-  #
-  Sig_list_out[[i]] = test_inner1
-  Total_list_out[[i]] = test_inner2
-  names(Sig_list_out)[i] = names(sig_genes_all)[i]
-  names(Total_list_out)[i] = names(total_genes_all)[i]
-  t1 = table(is.na(test_inner1[,3]))
-  message("this is for sig")
-  print(t1)
-  t2 = table(is.na(test_inner2[,3]))
-  message("this is for total")
-  print(t2)
+  tmp2 = dplyr::mutate(tmp2,limma_cvt = gather2) %>% dplyr::left_join(entrezUniverse, by = c("limma_cvt" = "SYMBOL"),suffix = c("_orig", "_final"))
+  Total_list_out[[i]] = tmp2
 }
+
+##
+# Keep only the entrez ID: then we have one vector for each element of the list (some format as always)
+Sig_list_out_entrez = list()
+Total_list_out_entrez = list()
+for (i in c(1:5)){
+  Sig_list_out_entrez[[i]] = unique(na.omit(data.frame(Sig_list_out[[i]])$ENTREZID_final))
+  names(Sig_list_out_entrez)[i] = names(Sig_list_out)[i]
+  Total_list_out_entrez[[i]] = unique(na.omit(data.frame(Total_list_out[[i]])$ENTREZID_final))
+  names(Total_list_out_entrez)[i] = names(Total_list_out)[i]
+}
+## save the convert for next time, it will take some time if run again
+save(Total_list_out,Sig_list_out,Sig_list_out_entrez,Total_list_out_entrez,file = "ConvertName2Entrez.RData")
+load("ConvertName2Entrez.RData")
+
 
 # print out
 require(openxlsx)
 #write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
 #write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
-
-# Keep only the entrez ID: then we have one vector for each element of the list (some format as always)
-Sig_list_out_entrez = list()
-Total_list_out_entrez = list()
-for (i in c(1:5)){
-  Sig_list_out_entrez[[i]] = data.frame(Sig_list_out[[i]])$entrezgene_id
-  names(Sig_list_out_entrez)[i] = names(Sig_list_out)[i]
-  Total_list_out_entrez[[i]] = data.frame(Total_list_out[[i]])$entrezgene_id
-  names(Total_list_out_entrez)[i] = names(Total_list_out)[i]
-}
-#str(Total_list_out_entrez)
-#str(Sig_list_out_entrez)
-
-
+str(Sig_list_out_entrez)
+str(Total_list_out_entrez)
 #####################
 ##  run analysis   ##
 ####################
-# just in case that does not work
-keyword = "MeshDB"
-DB = paste(keyword,".RData",sep = "")
-load(DB)
-
+# load meshdb, just in case that does not work
+#
+#keyword = "MeshDB"
+#DB = paste(keyword,".RData",sep = "")
+#load(DB)
+#
 ###
-MESH_Enrich_Result1001 = MESH_Enrich(total_genes_all= Total_list_out_entrez,
-                                     sig_genes_all = Sig_list_out_entrez,
-                                     TestingSubsetNames = TestingSubsetNames,
-                                     Meshthres = 0.05,
-                                     dataset="MeSH.Bta.eg.db",
-                                     keyword = "MESH_Enrichment_1001")
+
+# MESH_Enrich_Result1001 = MESH_Enrich(total_genes_all= Total_list_out_entrez,
+#                                     sig_genes_all = Sig_list_out_entrez,
+#                                     TestingSubsetNames = TestingSubsetNames,
+#                                     Meshthres = 0.05,
+#                                     dataset="MeSH.Bta.eg.db",
+#                                     keyword = "MESH_Enrichment_1001")
+
 #######################################################################################
 #                          7. Conversion to EntrezID　(use above)                     #
 #                                Reactome Enrich                                      #
@@ -359,26 +355,46 @@ NCBI2Reactome_all_path_bt[] <-   lapply(NCBI2Reactome_all_path_bt, function(x) i
 #InputSource = NCBI2Reactome_all_react_bt
 ## testing ends
 
+
+
 ## all react
-Reactome_Enrich_all_react_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
-                                                sig_genes_all=Sig_list_out_entrez,
-                                                TestingSubsetNames = TestingSubsetNames,
-                                                InputSource=  NCBI2Reactome_all_react_bt,
-                                                Reacthres = 0.05,
-                                                keyword = "Reactome_Enrichment_all_react_1001")
+#Reactome_Enrich_all_react_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
+#                                                sig_genes_all=Sig_list_out_entrez,
+#                                                TestingSubsetNames = TestingSubsetNames,
+#                                                InputSource=  NCBI2Reactome_all_react_bt,
+#                                                Reacthres = 0.05,
+#                                                keyword = "Reactome_Enrichment_all_react_1001")
 ## lowest path
-Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
-                                                 sig_genes_all=Sig_list_out_entrez,
-                                                 TestingSubsetNames = TestingSubsetNames,
-                                                 InputSource=  NCBI2Reactome_alowest_path_bt,
-                                                 Reacthres = 0.05,
-                                                 keyword = "Reactome_Enrich_lowest_path_1001")
+#Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
+#                                                 sig_genes_all=Sig_list_out_entrez,
+#                                                 TestingSubsetNames = TestingSubsetNames,
+#                                                 InputSource=  NCBI2Reactome_alowest_path_bt,
+#                                                 Reacthres = 0.05,
+#                                                 keyword = "Reactome_Enrich_lowest_path_1001")
 ## all path
-Reactome_Enrich_all_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
-                                                   sig_genes_all=Sig_list_out_entrez,
-                                                   TestingSubsetNames = TestingSubsetNames,
-                                                   InputSource=  NCBI2Reactome_all_path_bt,
-                                                   Reacthres = 0.05,
-                                                   keyword = "Reactome_Enrich_all_path_1001")
+#Reactome_Enrich_all_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
+#                                                   sig_genes_all=Sig_list_out_entrez,
+#                                                   TestingSubsetNames = TestingSubsetNames,
+#                                                   InputSource=  NCBI2Reactome_all_path_bt,
+#                                                   Reacthres = 0.05,
+#                                                   keyword = "Reactome_Enrich_all_path_1001")
 
 #########################################################################################################################
+
+#######################################################################################
+#                                   8.     kegg  Enrich                              #
+#######################################################################################
+str(Sig_list_out_entrez)
+str(Total_list_out_entrez)
+TestingSubsetNames
+
+KEGG_Enrichment_thres005_1008 = 
+  Kegg_Enrich_Plot(Sig_list_out_entrez,
+                   Total_list_out_entrez,
+                   TestingSubsetNames, 
+                   KEGGthres = 0.05,
+                   species = "bta", 
+                   id.type = "kegg",
+                   keyword = "KEGG_Enrichment_thres005_1008")
+
+
