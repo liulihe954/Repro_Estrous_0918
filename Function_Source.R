@@ -763,7 +763,7 @@ Kegg_Enrich_Plot = function(sig_genes_all,
       s = length(sig.genes[sig.genes %in% all_ENTER_temp]) # # genes from target GO also in the non-preserved module
       # format a matrix
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
-      Pval = round(fisher.test(M, alternative ="g")$p.value, digits = 3)
+      Pval = round(fisher.test(M, alternative ="g")$p.value, digits = 100)
       tmp = data.frame(ID= KEGGID[j], 
                        Term = KEGGTERM[j], 
                        totalG = m, 

@@ -232,15 +232,19 @@ Interpro_Enrich_Pregnancy_005 <- list("Full_join" = Interpro_Results_full_005_pr
 # two steps - 
 # 1. using alias2Symbol(): get the symbol
 # 2, convert using biomart
-# Potentially loose some, but that's life
-## transform ensemble ID or External Gene name to EntrezID
-ensembl_try=useMart("ENSEMBL_MART_ENSEMBL",dataset="btaurus_gene_ensembl")
-attributes_try = c("external_gene_name","entrezgene_accession","entrezgene_id") #"entrezgene_accession"
-#,"reactome","reactome_gene")
-# "entrezgene_trans_name"
-gene_try = getBM(attributes=attributes_try,mart = ensembl_try)
-#
-match_source = dplyr::select(gene_try,external_gene_name,entrezgene_id)
+# Potentially lose some, but that's life
+## MeSH Analysis
+library(org.Bt.eg.db)
+library(meshr)
+library(MeSH.db)
+library(MeSH.Bta.eg.db)
+# keys return the keys for the database contained in the MeSHdb object
+key.symbol = keys(org.Bt.eg.db,  keytype = c("SYMBOL"))
+entrezUniverse = select(org.Bt.eg.db, as.character(key.symbol), 
+                        columns = c("ENTREZID"),keytype = "SYMBOL") %>% 
+  dplyr::distinct(SYMBOL,.keep_all= TRUE)
+# dim(entrezUniverse)
+
 #
 Sig_list_out = list()
 Total_list_out = list()
@@ -396,5 +400,58 @@ KEGG_Enrichment_thres005_1008 =
                    species = "bta", 
                    id.type = "kegg",
                    keyword = "KEGG_Enrichment_thres005_1008")
+load("KEGG_Enrichment_thres005_1008.RData")
+# parse 1 by 1, and attach the space name in the end
+compile_select_index = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","hitsPerc")
+### group 1
+AR_CNTRL_enrich_KEGG = Parse_Results(KEGG_results_b[2]) 
+names(AR_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+AR_CNTRL_enrich_KEGG = dplyr::select(AR_CNTRL_enrich_KEGG,compile_select_index)  #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
+
+#
+PRF_CNTRL_enrich_KEGG = Parse_Results(KEGG_results_b[3])
+names(PRF_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+PRF_CNTRL_enrich_KEGG  = dplyr::select(PRF_CNTRL_enrich_KEGG,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
+
+### group 2
+FPM_CNTRL_enrich_KEGG = Parse_Results(KEGG_results_b[1])
+names(FPM_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+FPM_CNTRL_enrich_KEGG = dplyr::select(FPM_CNTRL_enrich_KEGG,compile_select_index) # %>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
+#
+SMP_CNTRL_enrich_KEGG= Parse_Results(KEGG_results_b[4])
+names(SMP_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+SMP_CNTRL_enrich_KEGG = dplyr::select(SMP_CNTRL_enrich_KEGG,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
+#
+SMP_FMP_enrich_KEGG = Parse_Results(KEGG_results_b[5])
+names(SMP_FMP_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+SMP_FMP_enrich_KEGG =  dplyr::select(SMP_FMP_enrich_KEGG,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
+
+
+#### group 1 - regression
+KEGG_Results_full_005_reg <-
+  dplyr::full_join(AR_CNTRL_enrich_KEGG,PRF_CNTRL_enrich_KEGG,
+                   by = c("KEGGID" = "KEGGID")) 
+#%>% tidyr::replace_na(list(InterproID.x = "Not Found",InterproID.y = "Not Found")) 
+KEGG_Results_inner_005_reg <-  
+  dplyr::inner_join(AR_CNTRL_enrich_KEGG,PRF_CNTRL_enrich_KEGG,
+                    by = c("KEGGID" = "KEGGID")) 
+
+#### group 2 - pregnancy
+KEGG_Results_full_005_preg <-  
+  dplyr::full_join(FPM_CNTRL_enrich_KEGG,SMP_CNTRL_enrich_KEGG,
+                   by = c("KEGGID" = "KEGGID"))  %>% 
+  dplyr::full_join(SMP_FMP_enrich_KEGG,
+                   by = c("KEGGID" = "KEGGID"))  
+# %>%  tidyr::replace_na(list(InterproID.x = "Not Found",InterproID.y = "Not Found",InterproID = "Not Found"))
+KEGG_Results_inner_005_preg <-  
+  dplyr::inner_join(FPM_CNTRL_enrich_KEGG,SMP_CNTRL_enrich_KEGG, 
+                    by = c("KEGGID" = "KEGGID"))  %>% 
+  dplyr::inner_join(SMP_FMP_enrich_KEGG,by = c("KEGGID" = "KEGGID")) 
+
+require(openxlsx)
+KEGG_Enrich_Regression_005 <- list("Full_join" = KEGG_Results_full_005_reg, "Inner_join" = KEGG_Results_inner_005_reg)
+write.xlsx(KEGG_Enrich_Regression_005,file = "KEGG_Enrich_Regression_005_1007.xlsx")
+KEGG_Enrich_Pregnancy_005 <- list("Full_join" = KEGG_Results_full_005_preg, "Inner_join" = KEGG_Results_inner_005_preg)
+write.xlsx(KEGG_Enrich_Pregnancy_005,file = "KEGG_Enrich_Pregnancy_005_1007.xlsx")
 
 
