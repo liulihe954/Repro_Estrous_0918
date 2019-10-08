@@ -597,15 +597,17 @@ Reactome_Enrich = function(total_genes_all,
   Reactome_gene =   unique(InputSource[,1])
   ReactomeID =      unique(InputSource[,2])
   ReactomeName =    unique(InputSource[,3])
-  #
+  #ReactomeID = ReactomeID[1:300]
   message("Total Number of module/subsets to check: ",length(TestingSubsetNames))
   message("Total Number of Reactome to check: ",length(ReactomeID)," with total number of names: ",length(ReactomeName))
   #pdf(paste(trimws(keyword),".pdf",sep = ""))
   for (i in c(1:(length(TestingSubsetNames)))){
-    #str(sig.genes)
+    #i = 1
     message("working on dataset #",i," - ",TestingSubsetNames[i])
     sig.genes = unlist(sig_genes_all[i]);attributes(sig.genes) = NULL
     total.genes = unlist(total_genes_all[i]);attributes(total.genes) = NULL
+    #length(sig.genes)
+    #length(total.genes)
     # total genes in the non-preserved module
     N = length(total.genes[total.genes %in% Reactome_gene])
     S = length(sig.genes[sig.genes %in% Reactome_gene]) #
@@ -621,7 +623,7 @@ Reactome_Enrich = function(total_genes_all,
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in 1:length(ReactomeID)){
       if (j%%100 == 0) {message("tryingd on Reactome ",j," - ",ReactomeID[j]," - ",ReactomeName[j])}
-      gENEs = subset(InputSource, ReactomeID == ReactomeID[j])$EntrezID
+      gENEs = unique(subset(InputSource, ReactomeID == ReactomeID[j])$EntrezID)
       m = length(total.genes[total.genes %in% gENEs]) 
       s = length(sig.genes[sig.genes %in% gENEs]) # 
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
@@ -677,8 +679,11 @@ Reactome_Enrich = function(total_genes_all,
   save(Reactome_results_b, Reactome_results_b_raw, raw_pvalue_distribution, file = paste(trimws(keyword),".RData",sep = ""))
   message(total_enrich," significant Reactome domains found within ",
           length(TestingSubsetNames)," modules/subsets", 
-          " at the significance level of ",IPthres)
+          " at the significance level of ",Reacthres)
   message("Nice! - Reactome enrichment finished and data saved")}
+
+#####=============================================================#######
+
 
 #########################################################################################################################
 #Parse_Reactome_Results = function(Mesh_results_b){
