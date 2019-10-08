@@ -137,6 +137,9 @@ load("ConvertName2Entrez.RData")
 #######################################################################################
 # Get data from web (to be specified)
 
+#rm(NCBI2Reactome_all_react)
+#rm(NCBI2Reactome_all_react_bt)
+
 # Read in database
 # lowest_path
 NCBI2Reactome_lowest_path = read.csv("NCBI2Reactome.txt",sep = "\t",header = F)
@@ -146,13 +149,19 @@ NCBI2Reactome_lowest_path_bt = dplyr::filter(NCBI2Reactome_lowest_path, V6 == "B
 #head(NCBI2Reactome_lowest_path_bt,10)
 # all_path
 NCBI2Reactome_all_path = read.csv("NCBI2Reactome_All_Levels.txt",sep = "\t",header = F)
-NCBI2Reactome_all_path_bt = dplyr::filter(NCBI2Reactome_all_path,V6 == "Bos taurus") %>% 
+NCBI2Reactome_all_path_bt = 
+  dplyr::filter(NCBI2Reactome_all_path,V6 == "Bos taurus") %>% 
   dplyr::select(V1,V2,V4,V5,V6) %>% 
-  rename(EntrezID = V1,ReactomeID = V2,Reactome_Description = V4, Source = V5,Species = V6)
+dplyr::rename(EntrezID = V1,
+              ReactomeID = V2,
+              Reactome_Description = V4, 
+              Source = V5, 
+              Species = V6)
 #head(NCBI2Reactome_all_path_bt)
 # all_react
 NCBI2Reactome_all_react = read.csv("NCBI2Reactome_PE_Reactions.txt",sep = "\t",header = F)
-NCBI2Reactome_all_react_bt = dplyr::filter(NCBI2Reactome_all_react,V8 == "Bos taurus") %>% 
+NCBI2Reactome_all_react_bt = 
+  dplyr::filter(NCBI2Reactome_all_react,V8 == "Bos taurus") %>% 
   dplyr::select(V1,V2,V3,V4,V6,V7,V8) %>% 
   dplyr::rename(EntrezID = V1,ReactomeID = V2, 
                 Reaction_Description = V3,
@@ -197,7 +206,7 @@ Reactome_Enrich_all_react_1001 = Reactome_Enrich(total_genes_all=Total_list_out_
 Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
                                                    sig_genes_all=Sig_list_out_entrez,
                                                    TestingSubsetNames = TestingSubsetNames,
-                                                   InputSource=  NCBI2Reactome_alowest_path_bt,
+                                                   InputSource=  NCBI2Reactome_lowest_path_bt,
                                                    Reacthres = 0.05,
                                                    keyword = "Reactome_Enrich_lowest_path_1008")
 ## all path
