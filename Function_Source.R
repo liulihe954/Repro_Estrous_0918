@@ -583,6 +583,7 @@ Reactome_Enrich = function(total_genes_all,
                            sig_genes_all,
                            TestingSubsetNames,
                            InputSource,
+                           Sig_list_out,
                            Reacthres = 0.05,
                            #biomart="ensembl",
                            #dataset="btaurus_gene_ensembl",
@@ -619,13 +620,19 @@ Reactome_Enrich = function(total_genes_all,
                      sigG=numeric(),
                      Pvalue=numeric(),
                      ExternalLoss_total = character(),
-                     ExternalLoss_sig = character())
+                     ExternalLoss_sig = character(),
+                     findG =  character())
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in 1:length(ReactomeID)){
+      # j = 101
       if (j%%100 == 0) {message("tryingd on Reactome ",j," - ",ReactomeID[j]," - ",ReactomeName[j])}
-      gENEs = unique(subset(InputSource, ReactomeID == ReactomeID[j])$EntrezID)
+      target = ReactomeID[j]
+      gENEs = unique(subset(InputSource, ReactomeID == target)$EntrezID)
       m = length(total.genes[total.genes %in% gENEs]) 
-      s = length(sig.genes[sig.genes %in% gENEs]) # 
+      findG = sig.genes[sig.genes %in% gENEs]
+      s = length(findG)
+      orig_list = data.frame(Sig_list_out[[i]]) %>% dplyr::filter(ENTREZID_final %in% findG)
+      PastefindG = paste(orig_list[,1], collapse="/")
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
       Pval = round(fisher.test(M, alternative ="g")$p.value,100)
       tmp = data.frame(ReactomeID = ReactomeID[j], 
@@ -634,18 +641,19 @@ Reactome_Enrich = function(total_genes_all,
                        sigG = s, 
                        Pvalue = Pval, 
                        ExternalLoss_total = ExternalLoss_total,
-                       ExternalLoss_sig = ExternalLoss_sig)
+                       ExternalLoss_sig = ExternalLoss_sig,
+                       findG = PastefindG)
       out = rbind(out,tmp)}
     # put all palues in a box
     raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
     # raw complilation starts
-    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("ReactomeID","ReactomeName", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("ReactomeID","ReactomeName", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
     Reactome_results_b_raw[[i]] = final_raw; names(Reactome_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched Reactomeid raw")
     # raw complilation ends
     # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
     ot = subset(out,totalG > 4 & Pvalue <= Reacthres)
-    final = ot[order(ot$Pvalue),];colnames(final) = c("ReactomeID","ReactomeName", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final = ot[order(ot$Pvalue),];colnames(final) = c("ReactomeID","ReactomeName", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
     Reactome_results_b[[i]] = final;names(Reactome_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched ReactomeID")
     # selection ends
