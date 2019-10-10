@@ -213,6 +213,7 @@ Reactome_Enrich_all_react_1001 = Reactome_Enrich(total_genes_all=Total_list_out_
                                                  sig_genes_all=Sig_list_out_entrez,
                                                  TestingSubsetNames = TestingSubsetNames,
                                                  InputSource=  NCBI2Reactome_all_react_bt,
+                                                 Sig_list_out = Sig_list_out,
                                                  Reacthres = 0.05,
                                                  keyword = "Reactome_Enrichment_all_react_1010")
 ## lowest path
@@ -220,6 +221,7 @@ Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_ou
                                                    sig_genes_all=Sig_list_out_entrez,
                                                    TestingSubsetNames = TestingSubsetNames,
                                                    InputSource=  NCBI2Reactome_lowest_path_bt,
+                                                   Sig_list_out = Sig_list_out,
                                                    Reacthres = 0.05,
                                                    keyword = "Reactome_Enrich_lowest_path_1010")
 
@@ -230,6 +232,7 @@ Reactome_Enrich_all_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_e
                                                 sig_genes_all=Sig_list_out_entrez,
                                                 TestingSubsetNames = TestingSubsetNames,
                                                 InputSource=  NCBI2Reactome_all_path_bt,
+                                                Sig_list_out = Sig_list_out,
                                                 Reacthres = 0.05,
                                                 keyword = "Reactome_Enrich_all_path_1010")
 
