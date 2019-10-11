@@ -1,5 +1,6 @@
 *
 !*.R
 !.gitignore
+!MeshDB.RData
 .Rproj.user
 *.Rproj

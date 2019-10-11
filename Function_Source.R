@@ -663,7 +663,7 @@ Kegg_Enrich_Plot = function(sig_genes_all,
       if (j%%100==0){message("checking on KEGG #",j,"-",KEGGID[j],"-",KEGGTERM[j])}
       # Calculate and overlap
       m = length(total.genes[total.genes %in% all_ENTER_temp]) # genes from target GO and in our dataset
-      findG = sig.genes[sig.genes %in% gENEs]
+      findG = sig.genes[sig.genes %in% all_ENTER_temp]
       s = length(findG) # # genes from target GO also in the non-preserved module
       orig_list = data.frame(Sig_list_out[[i]]) %>% dplyr::filter(ENTREZID_final %in% findG)
       PastefindG = paste(orig_list[,1], collapse="/")
