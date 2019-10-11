@@ -76,7 +76,7 @@ Reactome_Enrich_all_react_1001 = Reactome_Enrich(total_genes_all=Total_list_out_
                                                  InputSource=  NCBI2Reactome_all_react_bt,
                                                  Sig_list_out = Sig_list_out,
                                                  Reacthres = 0.05,
-                                                 keyword = "Reactome_Enrichment_all_react_1010")
+                                                 keyword = "Reactome_Enrichment_all_react_1011")
 ## lowest path
 Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_entrez,
                                                    sig_genes_all=Sig_list_out_entrez,
@@ -84,7 +84,7 @@ Reactome_Enrich_lowest_path_1001 = Reactome_Enrich(total_genes_all=Total_list_ou
                                                    InputSource=  NCBI2Reactome_lowest_path_bt,
                                                    Sig_list_out = Sig_list_out,
                                                    Reacthres = 0.05,
-                                                   keyword = "Reactome_Enrich_lowest_path_1010")
+                                                   keyword = "Reactome_Enrich_lowest_path_1011")
 
 
 
@@ -95,7 +95,7 @@ Reactome_Enrich_all_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_e
                                                 InputSource=  NCBI2Reactome_all_path_bt,
                                                 Sig_list_out = Sig_list_out,
                                                 Reacthres = 0.05,
-                                                keyword = "Reactome_Enrich_all_path_1010")
+                                                keyword = "Reactome_Enrich_all_path_1011")
 #########################################################################################################################
 #########################################################################################################################
 #total_genes_all=Total_list_out_entrez
@@ -107,15 +107,15 @@ Reactome_Enrich_all_path_1001 = Reactome_Enrich(total_genes_all=Total_list_out_e
 ##############################
 ### formating the results  ##
 ##############################
-All_dataset = c("Reactome_Enrich_lowest_path_1010.RData",
-                "Reactome_Enrich_all_path_1010.RData",
-                "Reactome_Enrichment_all_react_1010.RData")
-Keyword1 = c("Reactome_Enrich_Regression_005_1010_lowest_path.xlsx",
-             "Reactome_Enrich_Regression_005_1010_all_path.xlsx",
-             "Reactome_Enrich_Regression_005_1010_all_react.xlsx")
-Keyword2 = c("Reactome_Enrich_Pregnancy_005_1010_lowest_path.xlsx",
-             "Reactome_Enrich_Pregnancy_005_1010_all_path.xlsx",
-             "Reactome_Enrich_Pregnancy_005_1010_all_react.xlsx")
+All_dataset = c("Reactome_Enrich_lowest_path_1011.RData",
+                "Reactome_Enrich_all_path_1011.RData",
+                "Reactome_Enrichment_all_react_1011.RData")
+Keyword1 = c("Reactome_Enrich_Regression_005_1011_lowest_path.xlsx",
+             "Reactome_Enrich_Regression_005_1011_all_path.xlsx",
+             "Reactome_Enrich_Regression_005_1011_all_react.xlsx")
+Keyword2 = c("Reactome_Enrich_Pregnancy_005_1011_lowest_path.xlsx",
+             "Reactome_Enrich_Pregnancy_005_1011_all_path.xlsx",
+             "Reactome_Enrich_Pregnancy_005_1011_all_react.xlsx")
 for ( i in seq_along(All_dataset)){
   compile_select_index = c("ReactomeID","ReactomeTerm","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")
   ### group 1
