@@ -349,6 +349,7 @@ InterPro_Enrich = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",IPthres)
   message("Nice! - Interpro enrichment finished and data saved")}
+
 #########################################################################################################################
 MESH_Enrich = function(total_genes_all,
                        sig_genes_all,
@@ -371,31 +372,44 @@ MESH_Enrich = function(total_genes_all,
   Mesh_results_b_raw = list()
   library(MeSH.db);library(MeSH.Bta.eg.db);library(tidyverse);library(gage);library(magrittr)
   library(ggplot2);library(biomaRt);library(MeSH.Bta.eg.db)
-  #========================================================================#
-  ### raw data for retrive MESHid and all details linked
-  #
+  
+  ### Three ways to get meshdb
+  # 1 download from github: we are gonna use
+  githubURL <- "https://github.com/liulihe954/Repro_Estrous_0918/raw/master/MeshDB.RData"
+  load(url(githubURL))
+  if (all(MeshCate%in%c("G","D"))){list_Bta = dplyr::filter(list_Bta, MESHCATEGORY %in% MeshCate)}
+  else {
+    message("Sorry, we only have G and D")
+    message("Now reload the category you need, it will take a while...")
+    KEY = keys(MeSH.db, keytype = "MESHID")
+    List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
+    List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
+    Match_List = dplyr::select(List, MESHID, MESHTERM)
+    key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
+    list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
+       dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY %in% MeshCate) %>% 
+       dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))}
+  # 2. match from the very begining (will take an hour or so)
   #KEY = keys(MeSH.db, keytype = "MESHID")
   #List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
   #List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
   #Match_List = dplyr::select(List, MESHID, MESHTERM)
   ##head(Match_List) 
   ### Prepare Bta database
-  #
   #key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
   #list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
   #  dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY %in% MeshCate) %>% 
   #  dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
-  #========================================================================#
-  # alternatively
   
-  keyword_outer = "MeshDB"
-  DB = paste(keyword_outer,".RData",sep = "")
-  load(DB)
-  list_Bta = dplyr::filter(list_Bta, MESHCATEGORY == "G")
-  
+  # 3. alternatively, if you have them in your environment
+  # keyword_outer = "MeshDB"
+  # DB = paste(keyword_outer,".RData",sep = "")
+  # load(DB)
   #Sig_list_out_entrez_test2
   #Total_list_out_entrez_test2
   # Get index
+  list_Bta = list_Bta[which(list_Bta$MESHCATEGORY %in%MeshCate),]
+  #list_Bta = dplyr::filter(list_Bta,MESHCATEGORY%in%MeshCate)
   genesMesh = unique(list_Bta$GENEID)
   MeshID = unique(list_Bta$MESHID)#; MeshID = MeshID[1:200] # delete
   MeshTerm = unique(list_Bta$MESHTERM)
