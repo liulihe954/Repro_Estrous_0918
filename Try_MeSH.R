@@ -131,14 +131,14 @@ MESH_Enrichment_1010 = MESH_Enrich(total_genes_all,
                    TestingSubsetNames,
                    Meshthres = 0.05,
                    Sig_list_out = Sig_list_out,
-                   MeshCate = c("D","G"),
+                   MeshCate = c("G"),
                    dataset="MeSH.Bta.eg.db",
-                   keyword = "MESH_Enrichment_1010")
+                   keyword = "MESH_Enrichment_1010_G")
                        
 ##############################################################################################################
-load("MESH_Enrichment_1010.RData")
-keyword1 = "Mesh_Enrich_Regression_005_1010.xlsx"
-keyword2 = "Mesh_Enrich_Pregnancy_005_1010.xlsx"
+load("MESH_Enrichment_1010_G.RData")
+keyword1 = "Mesh_Enrich_Regression_005_1010_G.xlsx"
+keyword2 = "Mesh_Enrich_Pregnancy_005_1010_G.xlsx"
 
 # parse 1 by 1, and attach the space name in the end
 compile_select_index = c("MeshID","MeshTerm","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")

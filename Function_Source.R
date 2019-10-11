@@ -440,22 +440,24 @@ MESH_Enrich = function(total_genes_all,
   #========================================================================#
   ### raw data for retrive MESHid and all details linked
   #
-  #KEY = keys(MeSH.db, keytype = "MESHID")
-  #List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
-  ##List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
-  #Match_List = dplyr::select(List, MESHID, MESHTERM)
+  KEY = keys(MeSH.db, keytype = "MESHID")
+  List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")
+  List = select(MeSH.db, keys = KEY[1:3], columns = columns(MeSH.db), keytype = "MESHID")
+  Match_List = dplyr::select(List, MESHID, MESHTERM)
   ##head(Match_List) 
   ### Prepare Bta database
   #
-  #key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
-  #list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
-  #  dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY == MeshCate) %>% 
-  #  dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
+  key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
+  list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
+    dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY %in% MeshCate) %>% 
+    dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
   #========================================================================#
   # alternatively
-  keyword_outer = "MeshDB"
-  DB = paste(keyword_outer,".RData",sep = "")
-  load(DB)
+  
+  #keyword_outer = "MeshDB"
+  #DB = paste(keyword_outer,".RData",sep = "")
+  #load(DB)
+  
   #Sig_list_out_entrez_test2
   #Total_list_out_entrez_test2
   # Get index
