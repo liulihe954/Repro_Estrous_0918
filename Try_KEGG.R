@@ -15,32 +15,33 @@ KEGG_Enrichment_thres005_1008 =
                    KEGGthres = 0.05,
                    species = "bta", 
                    id.type = "kegg",
-                   keyword = "KEGG_Enrichment_thres005_1008")
+                   Sig_list_out = Sig_list_out,
+                   keyword = "KEGG_Enrichment_thres005_1011")
 #######################################################################################
-load("KEGG_Enrichment_thres005_1008.RData")
+load("KEGG_Enrichment_thres005_1011.RData")
 # parse 1 by 1, and attach the space name in the end
-compile_select_index = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","hitsPerc")
+compile_select_index = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")
 ### group 1
 AR_CNTRL_enrich_KEGG = Parse_Results(KEGG_results_b[2]) 
-names(AR_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+names(AR_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 AR_CNTRL_enrich_KEGG = dplyr::select(AR_CNTRL_enrich_KEGG,compile_select_index)  #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 
 #
 PRF_CNTRL_enrich_KEGG = Parse_Results(KEGG_results_b[3])
-names(PRF_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+names(PRF_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 PRF_CNTRL_enrich_KEGG  = dplyr::select(PRF_CNTRL_enrich_KEGG,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 
 ### group 2
 FPM_CNTRL_enrich_KEGG = Parse_Results(KEGG_results_b[1])
-names(FPM_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+names(FPM_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 FPM_CNTRL_enrich_KEGG = dplyr::select(FPM_CNTRL_enrich_KEGG,compile_select_index) # %>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 #
 SMP_CNTRL_enrich_KEGG= Parse_Results(KEGG_results_b[4])
-names(SMP_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+names(SMP_CNTRL_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 SMP_CNTRL_enrich_KEGG = dplyr::select(SMP_CNTRL_enrich_KEGG,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 #
 SMP_FMP_enrich_KEGG = Parse_Results(KEGG_results_b[5])
-names(SMP_FMP_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","hitsPerc")
+names(SMP_FMP_enrich_KEGG) = c("KEGGID","KEGGTERM","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 SMP_FMP_enrich_KEGG =  dplyr::select(SMP_FMP_enrich_KEGG,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 
 
@@ -67,8 +68,8 @@ KEGG_Results_inner_005_preg <-
 
 require(openxlsx)
 KEGG_Enrich_Regression_005 <- list("Full_join" = KEGG_Results_full_005_reg, "Inner_join" = KEGG_Results_inner_005_reg)
-write.xlsx(KEGG_Enrich_Regression_005,file = "KEGG_Enrich_Regression_005_1007.xlsx")
+write.xlsx(KEGG_Enrich_Regression_005,file = "KEGG_Enrich_Regression_005_1011.xlsx")
 KEGG_Enrich_Pregnancy_005 <- list("Full_join" = KEGG_Results_full_005_preg, "Inner_join" = KEGG_Results_inner_005_preg)
-write.xlsx(KEGG_Enrich_Pregnancy_005,file = "KEGG_Enrich_Pregnancy_005_1007.xlsx")
+write.xlsx(KEGG_Enrich_Pregnancy_005,file = "KEGG_Enrich_Pregnancy_005_1011.xlsx")
 
 
