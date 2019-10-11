@@ -57,8 +57,8 @@ TestingSubsetNames = names(total_genes_all)
 
 library(org.Bt.eg.db)
 # keys return the keys for the database contained in the MeSHdb object
-key.symbol = keys(org.Bt.eg.db,  keytype = c("SYMBOL"))
-entrezUniverse = select(org.Bt.eg.db, as.character(key.symbol), 
+key.symbol =  AnnotationDbi::keys(org.Bt.eg.db,  keytype = c("SYMBOL"))
+entrezUniverse =  AnnotationDbi::select(org.Bt.eg.db, as.character(key.symbol), 
                         columns = c("ENTREZID"),keytype = "SYMBOL") %>% 
   dplyr::distinct(SYMBOL,.keep_all= TRUE)
 # dim(entrezUniverse)
@@ -69,7 +69,7 @@ Total_list_out = list()
 library(limma)
 for (i in c(1:5)){
   ## for sig
-  tmp1 = data.frame(SYMBOL = unlist(sig_genes_all[[i]]))
+  tmp1 = data.frame(SYMBOL = unique(unlist(sig_genes_all[[i]])))
   tmp1 = dplyr::left_join(tmp1 ,entrezUniverse, by = c("SYMBOL" = "SYMBOL"))
   # find the gap
   gather1 = tmp1$SYMBOL
@@ -82,7 +82,7 @@ for (i in c(1:5)){
   Sig_list_out[[i]] = tmp1
   
   ## for total 
-  tmp2 = data.frame(SYMBOL = unlist(total_genes_all[[i]]))
+  tmp2 = data.frame(SYMBOL = unique(unlist(total_genes_all[[i]])))
   tmp2 = dplyr::left_join(tmp2,entrezUniverse,by = c("SYMBOL" = "SYMBOL"))
   # find the gap
   gather2 = tmp2$SYMBOL

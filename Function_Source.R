@@ -138,9 +138,9 @@ Go_Enrich_Plot = function(total.genes,
 #########################################################################################################################
 ReduceDim_GO_Plot = function(Enrich_Out,
                              GOthres = 0.001,
-                             label_size1 = 0.4,
-                             label_size2 = 0.4,
-                             label_size3 = 0.4,
+                             label_sizeCC = 0.4,
+                             label_sizeBP = 0.4,
+                             label_sizeMF = 0.4,
                              Database = "org.Bt.eg.db",
                              measure="Jiang",combine=NULL,
                              Dataset_Name){
@@ -201,15 +201,15 @@ ReduceDim_GO_Plot = function(Enrich_Out,
   # Now we take the results and plot
   pdf(paste("Semantic_Similarity_Measure_",Dataset_Name,"_",formatC(GOthres, format = "e", digits = 0),".pdf",sep = ""))
   corrplot(goSimMatrix_CC_new,title = "Semantic_Similarity_Measure_CC",
-           tl.col = "black", tl.cex = label_size1, 
+           tl.col = "black", tl.cex = label_sizeCC, 
            method = "shade", order = "hclust", 
            hclust.method = "centroid", is.corr = FALSE,mar=c(0,0,1,0))
   corrplot(goSimMatrix_BP_new,title = "Semantic_Similarity_Measure_BP",
-           tl.col = "black", tl.cex = label_size2, 
+           tl.col = "black", tl.cex = label_sizeBP, 
            method = "shade", order = "hclust", 
            hclust.method = "centroid", is.corr = FALSE,mar=c(0,0,1,0))
   corrplot(goSimMatrix_MF_new,title = "Semantic_Similarity_Measure_MF",
-           tl.col = "black", tl.cex = label_size3, 
+           tl.col = "black", tl.cex = label_sizeMF, 
            method = "shade", order = "hclust", 
            hclust.method = "centroid", is.corr = FALSE,mar=c(0,0,1,0))
   dev.off()
