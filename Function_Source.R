@@ -1,8 +1,6 @@
 ##############################################################################################################
-##############################################################################################################
 library(readxl);library(ggplot2);library(biomaRt);library(tidyverse)
 library(biomaRt);library(GOSemSim);library(corrplot);library(limma)
-##############################################################################################################
 ##############################################################################################################
 Parse_Results = function(Results_List,keyword = "Which D.B"){
   all_enrich = data.frame(ID=character(),
@@ -28,7 +26,6 @@ Parse_Results = function(Results_List,keyword = "Which D.B"){
   print(paste("In database: ",keyword,"-",total_hits,"hits found in",total_modules,"tested modules: ",names(Results_List)))
   return(ParseResults = all_enrich)
 }
-##############################################################################################################
 ##############################################################################################################
 Go_Enrich_Plot = function(total.genes,
                           sig.genes,
@@ -72,13 +69,16 @@ Go_Enrich_Plot = function(total.genes,
                      sigG=numeric(),
                      Pvalue=numeric(),
                      ExternalLoss_total = character(),
-                     ExternalLoss_sig = character())
+                     ExternalLoss_sig = character(),
+                     findG =  character())
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in 1:length(GO)){
       if (j%%100 == 0) {message("tryingd on GO ",j," - ",GO[j]," - ",Name[j])}
       gENEs = subset(gene, go_id == GO[j])$external_gene_name # all gene in target GO
       m = length(total.genes[total.genes %in% gENEs]) # genes from target GO and in our dataset
-      s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target GO also in the non-preserved module
+      findG = sig.genes[sig.genes %in% gENEs]
+      s = length(findG)
+      PastefindG = paste(findG,collapse="/")
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
       Pval = round(fisher.test(M, alternative ="g")$p.value,100)
       tmp = data.frame(GO = GO[j], 
@@ -87,18 +87,19 @@ Go_Enrich_Plot = function(total.genes,
                        sigG = s, 
                        Pvalue = Pval, 
                        ExternalLoss_total = ExternalLoss_total,
-                       ExternalLoss_sig = ExternalLoss_sig)
+                       ExternalLoss_sig = ExternalLoss_sig,
+                       findG = PastefindG)
       out = rbind(out,tmp)}
     # put all palues in a box
     raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
     # raw complilation starts
-    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("GOID","GO_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("GOID","GO_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
     GO_results_b_raw[[i]] = final_raw; names(GO_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched GO raw")
     # raw complilation ends
     # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
     ot = subset(out,totalG > 4 & Pvalue <= GOthres)
-    final = ot[order(ot$Pvalue),];colnames(final) = c("GOID","GO_Name", "Total_Genes", "Significant_Genes", "pvalue","ExternalLoss_total","InternalLoss_sig")
+    final = ot[order(ot$Pvalue),];colnames(final) = c("GOID","GO_Name", "Total_Genes", "Significant_Genes", "pvalue","ExternalLoss_total","InternalLoss_sig","findG")
     final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
     GO_results_b[[i]] = final;names(GO_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched GO")
     # selection ends
@@ -134,33 +135,6 @@ Go_Enrich_Plot = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",GOthres)
   message("Nice! - GO enrichment finished and data saved")}
-#########################################################################################################################
-#########################################################################################################################
-#Parse_GO_Results = function(GO_results_b){
-#  all_enrich_GO = data.frame(ID=character(),
-#                             Description=character(),
-#                             Total_gene=numeric(),
-#                             Significant_gene=numeric(),
-#                             pvalue=numeric(),
-#                             ExternalLoss_total = character(),
-#                             InternalLoss_total = character(),
-#                             HitPerc = numeric(),
-#                             stringsAsFactors=FALSE)
-#  for (i in 1:length(GO_results_b)){
-#    len = dim(data.frame(GO_results_b[i]))[1]
-#    if (len> 0){
-#      tmp = data.frame(GO_results_b[i])
-#      names(tmp) = names(all_enrich_GO)
-#      all_enrich_GO = rbind(all_enrich_GO,tmp)
-#    }
-#  }
-  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-#  total_hits = dim(all_enrich_GO)[1]
-#  total_modules = length(GO_results_b)
-#  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
-#  return(ParseResults = all_enrich_GO)
-#}
-#########################################################################################################################
 #########################################################################################################################
 ReduceDim_GO_Plot = function(Enrich_Out,
                              GOthres = 0.001,
@@ -256,32 +230,6 @@ ReduceDim_GO_Plot = function(Enrich_Out,
   message("Nice! Excels, Plots exported and RData saved!")
 }
 #########################################################################################################################
-#########################################################################################################################
-#Parse_Results = function(KEGG_results_b){
-#  all_enrich_KEGG = data.frame(ID=character(),
-#                               Description=character(),
-#                               GeneRatio=character(),
-#                               BgRatio=character(),
-#                               pvalue=numeric(),
-#                               p.adjust=numeric(),
-#                               qvalue=numeric(),
-#                               geneID=character(),
-#                               Count=numeric(),
-#                               stringsAsFactors=FALSE)
-#  for (i in 1:length(KEGG_results_b)){
-#    len = dim(data.frame(KEGG_results_b[i]))[1]
-#    if (len> 0){
-#      all_enrich_KEGG = rbind(all_enrich_KEGG,data.frame(KEGG_results_b[i]))
-#    }
-#  }
-  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-#  total_hits = dim(all_enrich_KEGG)[1]
-#  total_modules = length(KEGG_results_b)
-#  print(paste(total_hits,"hits found in",total_modules,"non-preserved modules"))
-#  return(ParseResults = all_enrich_KEGG)
-#}
-#########################################################################################################################
-#########################################################################################################################
 InterPro_Enrich = function(total.genes,
                            sig.genes,
                            TestingSubsetNames,
@@ -331,7 +279,8 @@ InterPro_Enrich = function(total.genes,
                      sigG=numeric(),
                      Pvalue=numeric(),
                      ExternalLoss_total = character(),
-                     ExternalLoss_sig = character())
+                     ExternalLoss_sig = character(),
+                     findG =  character())
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in 1:length(Interpro)){
       if (j%%100 == 0) {message("tryingd on Interpro ",j," - ",Interpro[j]," - ",Name[j])}
@@ -341,7 +290,9 @@ InterPro_Enrich = function(total.genes,
         gENEs = subset(gene, interpro == Interpro[j])$external_gene_name
       }
       m = length(total.genes[total.genes %in% gENEs]) # genes from target interpro and in our dataset
-      s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target interpro also in the non-preserved module
+      findG = sig.genes[sig.genes %in% gENEs]
+      s = length(findG) # # genes from target interpro also in the non-preserved module
+      PastefindG = paste(findG, collapse="/")
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
       Pval = round(fisher.test(M, alternative ="g")$p.value,100)
       tmp = data.frame(Interpro = Interpro[j], 
@@ -350,18 +301,19 @@ InterPro_Enrich = function(total.genes,
                        sigG = s, 
                        Pvalue = Pval, 
                        ExternalLoss_total = ExternalLoss_total,
-                       ExternalLoss_sig = ExternalLoss_sig)
+                       ExternalLoss_sig = ExternalLoss_sig,
+                       findG = PastefindG)
       out = rbind(out,tmp)}
     # put all palues in a box
     raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
     # raw complilation starts
-    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("InterproID","Interpro_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("InterproID","Interpro_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
     Interpro_results_b_raw[[i]] = final_raw; names(Interpro_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched Interpro raw")
     # raw complilation ends
     # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
     ot = subset(out,totalG > 4 & Pvalue <= IPthres)
-    final = ot[order(ot$Pvalue),];colnames(final) = c("InterproID","Interpro_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final = ot[order(ot$Pvalue),];colnames(final) = c("InterproID","Interpro_Name", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
     Interpro_results_b[[i]] = final;names(Interpro_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched Interpro")
     # selection ends
@@ -397,25 +349,7 @@ InterPro_Enrich = function(total.genes,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",IPthres)
   message("Nice! - Interpro enrichment finished and data saved")}
-
 #########################################################################################################################
-#Parse_Interpro_Results = function(Interpro_results_b){
-#  all_enrich_Interpro = data.frame()
-#  for (i in 1:length(Interpro_results_b)){
-#    len = dim(data.frame(Interpro_results_b[i]))[1]
-#    if (len> 0){
-#      all_enrich_Interpro = rbind(all_enrich_Interpro,data.frame(Interpro_results_b[i]))
-#    }
-#  }
-  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-#  total_hits = dim(all_enrich_Interpro)[1]
-#  total_modules = length(Interpro_results_b)
-#  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
-#  return(ParseResults = all_enrich_Interpro)
-#}
-#########################################################################################################################
-#########################################################################################################################
-#####=============================================================#######
 MESH_Enrich = function(total_genes_all,
                        sig_genes_all,
                        TestingSubsetNames,
@@ -554,36 +488,6 @@ MESH_Enrich = function(total_genes_all,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",Meshthres)
   message("Nice! - Mesh enrichment finished and data saved")}
-#####=============================================================#######
-
-
-
-#########################################################################################################################
-#Parse_Mesh_Results = function(Mesh_results_b){
-#  all_enrich_Mesh = data.frame(ID=character(),
-#                               Description=character(),
-#                               Total_gene=numeric(),
-#                               Significant_gene=numeric(),
-#                               pvalue=numeric(),
-#                               ExternalLoss_total = character(),
-#                               InternalLoss_total = character(),
-#                               HitPerc = numeric(),
-#                               stringsAsFactors=FALSE)
-#  for (i in 1:length(Mesh_results_b)){
-#    len = dim(data.frame(Mesh_results_b[i]))[1]
-#    if (len> 0){
-#      tmp = data.frame(Mesh_results_b[i])
-#      names(tmp) = names(all_enrich_Mesh)
-#      all_enrich_Mesh = rbind(all_enrich_Mesh,tmp)
-#    }
-#  }
-  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-#  total_hits = dim(all_enrich_Mesh)[1]
-#  total_modules = length(Mesh_results_b)
-#  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
-#  return(ParseResults = all_enrich_Mesh)
-#}
-#########################################################################################################################
 #########################################################################################################################
 Reactome_Enrich = function(total_genes_all,
                            sig_genes_all,
@@ -695,27 +599,6 @@ Reactome_Enrich = function(total_genes_all,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",Reacthres)
   message("Nice! - Reactome enrichment finished and data saved")}
-
-#####=============================================================#######
-
-
-#########################################################################################################################
-#Parse_Reactome_Results = function(Mesh_results_b){
-#  all_enrich_Mesh = data.frame()
-#  for (i in 1:length(Mesh_results_b)){
-#    len = dim(data.frame(Mesh_results_b[i]))[1]
-#    if (len> 0){
-#      all_enrich_Mesh = rbind(all_enrich_Mesh,data.frame(Mesh_results_b[i]))
-#    }
-#  }
-#  #all_enrich_KEGG <- all_enrich_KEGG %>% dplyr::group_by(KEGG.ID) %>% dplyr::distinct()
-#  total_hits = dim(all_enrich_Mesh)[1]
-#  total_modules = length(Mesh_results_b)
-#  print(paste(total_hits,"hits found in",total_modules,"tested modules"))
-#  return(ParseResults = all_enrich_Mesh)
-#} # did change name because its all the same
-
-#########################################################################################################################
 #########################################################################################################################
 Kegg_Enrich_Plot = function(sig_genes_all,
                             total_genes_all,# all genes in your dataset( vector - format - vector - ensembl iD)
@@ -723,6 +606,7 @@ Kegg_Enrich_Plot = function(sig_genes_all,
                             KEGGthres = 0.05, # significant level (default - 0.05)
                             species = "bta", 
                             id.type = "kegg",
+                            Sig_list_out = Sig_list_out,
                             #biomart="ENSEMBL_MART_ENSEMBL",
                             #dataset="btaurus_gene_ensembl",
                             #host="http://www.ensembl.org",
@@ -750,7 +634,6 @@ Kegg_Enrich_Plot = function(sig_genes_all,
     genesKEGG = append(genesKEGG,tmp_gene,length(genesKEGG))
   }
   genesKEGG = unique(genesKEGG)
-  ###############################Matching done; now plotting #################################
   # the output is a pdf and every single page will be the point plot of the enriched item of a specific module.
   # pdf(paste(trimws(keyword),".pdf",sep = ""))
   for (i in c(1:(length(TestingSubsetNames)))){
@@ -769,18 +652,21 @@ Kegg_Enrich_Plot = function(sig_genes_all,
                      sigG=numeric(),
                      Pvalue=numeric(),
                      ExternalLoss_total = character(),
-                     ExternalLoss_sig = character())
+                     ExternalLoss_sig = character(),
+                     findG =  character())
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     # Double loop: trying to go through every single KEGG.db, so extract each one first
     for (j in 1:length(names(kegg.gs))){
       #KEGG_Index = unlist(str_split(names(kegg.gs)[j]," ",2))[1] # split to get the GO-index
       #KEGG_Name = unlist(str_split(names(kegg.gs)[j]," ",2))[2] # split to get the Go name
       all_ENTER_temp = (as.vector(unlist(kegg.gs[j]))) #
-      if (j%%1==0){message("checking on KEGG #",j,"-",KEGGID[j],"-",KEGGTERM[j])}
+      if (j%%100==0){message("checking on KEGG #",j,"-",KEGGID[j],"-",KEGGTERM[j])}
       # Calculate and overlap
       m = length(total.genes[total.genes %in% all_ENTER_temp]) # genes from target GO and in our dataset
-      s = length(sig.genes[sig.genes %in% all_ENTER_temp]) # # genes from target GO also in the non-preserved module
-      # format a matrix
+      findG = sig.genes[sig.genes %in% gENEs]
+      s = length(findG) # # genes from target GO also in the non-preserved module
+      orig_list = data.frame(Sig_list_out[[i]]) %>% dplyr::filter(ENTREZID_final %in% findG)
+      PastefindG = paste(orig_list[,1], collapse="/")
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
       Pval = round(fisher.test(M, alternative ="g")$p.value, digits = 100)
       tmp = data.frame(ID= KEGGID[j], 
@@ -789,18 +675,19 @@ Kegg_Enrich_Plot = function(sig_genes_all,
                        sigG = s, 
                        Pvalue = Pval, 
                        ExternalLoss_total = ExternalLoss_total,
-                       ExternalLoss_sig = ExternalLoss_sig)
+                       ExternalLoss_sig = ExternalLoss_sig,
+                       findG = PastefindG)
       out = rbind(out,tmp)}
     # put all palues in a box
     raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
     # raw complilation starts
-    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("KEGGID","KEGGTERM", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("KEGGID","KEGGTERM", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
     KEGG_results_b_raw[[i]] = final_raw; names(KEGG_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched kegg raw")
     # raw complilation ends
     # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
     ot = subset(out,totalG > 4 & Pvalue <= KEGGthres)
-    final = ot[order(ot$Pvalue),];colnames(final) = c("KEGGID","KEGGTERM", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final = ot[order(ot$Pvalue),];colnames(final) = c("KEGGID","KEGGTERM", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
     KEGG_results_b[[i]] = final;names(KEGG_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched KEGG")
     # selection ends
