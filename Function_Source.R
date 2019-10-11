@@ -415,11 +415,12 @@ InterPro_Enrich = function(total.genes,
 #}
 #########################################################################################################################
 #########################################################################################################################
-#####==========================================######
+#####=============================================================#######
 MESH_Enrich = function(total_genes_all,
                        sig_genes_all,
                        TestingSubsetNames,
                        Meshthres = 0.05,
+                       Sig_list_out,
                        MeshCate = c("D","G"),
                        #biomart="ensembl",
                        dataset="MeSH.Bta.eg.db",
@@ -459,7 +460,7 @@ MESH_Enrich = function(total_genes_all,
   #Total_list_out_entrez_test2
   # Get index
   genesMesh = unique(list_Bta$GENEID)
-  MeshID = unique(list_Bta$MESHID)#;MeshID = MeshID[1:1000] # delete
+  MeshID = unique(list_Bta$MESHID); MeshID = MeshID[1:200] # delete
   MeshTerm = unique(list_Bta$MESHTERM)
   #head(unique(MeshID),200)
   #length(genesGO)
@@ -467,11 +468,6 @@ MESH_Enrich = function(total_genes_all,
   message("Total Number of Mesh to check: ",length(MeshID)," with total number of names: ",length(MeshTerm))
   #pdf(paste(trimws(keyword),".pdf",sep = ""))
   for (i in c(1:(length(TestingSubsetNames)))){
-    #i = 1
-    #Sig_list_out_entrez_test2
-    #Total_list_out_entrez_test2
-    #Sig_list_out_entrez = list()
-    #Total_list_out_entrez = list()
     message("working on dataset #",i," - ",TestingSubsetNames[i])
     sig.genes = unlist(sig_genes_all[i]);attributes(sig.genes) = NULL
     total.genes = unlist(total_genes_all[i]);attributes(total.genes) = NULL
@@ -486,13 +482,19 @@ MESH_Enrich = function(total_genes_all,
                      sigG=numeric(),
                      Pvalue=numeric(),
                      ExternalLoss_total = character(),
-                     ExternalLoss_sig = character())
+                     ExternalLoss_sig = character(),
+                     findG =  character())
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in c(1:length(MeshID))){
       if (j%%1000 == 0) {message("tryingd on MeshID ",j," - ",MeshID[j]," - ",MeshTerm[j])}
-      gENEs = unique(subset(list_Bta, MESHID == MESHID[j])$GENEID)
+      target = MeshID[j]
+      gENEs = unique(subset(list_Bta, MESHID == target)$GENEID)
       m = length(total.genes[total.genes %in% gENEs]) # genes from target  and in our dataset
-      s = length(sig.genes[sig.genes %in% gENEs]) # # genes from target  also in the non-preserved module
+      findG = sig.genes[sig.genes %in% gENEs]
+      s = length(findG)
+      str(Sig_list_out)
+      orig_list = data.frame(Sig_list_out[[i]]) %>% dplyr::filter(ENTREZID_final %in% findG)
+      PastefindG = paste(orig_list[,1], collapse="/")
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)
       Pval = round(fisher.test(M, alternative ="g")$p.value,100)
       #length(gENEs);Pval
@@ -502,18 +504,19 @@ MESH_Enrich = function(total_genes_all,
                        sigG = s, 
                        Pvalue = Pval, 
                        ExternalLoss_total = ExternalLoss_total,
-                       ExternalLoss_sig = ExternalLoss_sig)
+                       ExternalLoss_sig = ExternalLoss_sig,
+                       findG = PastefindG)
       out = rbind(out,tmp)}
     # put all palues in a box
     raw_pvalue_all = append(raw_pvalue_all,out$Pvalue,length(raw_pvalue_all))
     # raw complilation starts
-    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final_raw = out[order(out$Pvalue),];colnames(final_raw) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final_raw = final_raw %>% dplyr::mutate(hitsPerc = Significant_Genes*100 / Total_Genes)
     Mesh_results_b_raw[[i]] = final_raw; names(Mesh_results_b_raw)[i] = paste(TestingSubsetNames[i],"with",dim(final_raw)[1],"enriched Mesh raw")
     # raw complilation ends
     # selection starts - select those has 4 more gene in common and pvalue smaller than 0.05
     ot = subset(out,totalG > 4 & Pvalue <= Meshthres)
-    final = ot[order(ot$Pvalue),];colnames(final) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig")
+    final = ot[order(ot$Pvalue),];colnames(final) = c("MeshID","MeshTerm", "Total_Genes", "Significant_Genes", "pvalue_r","ExternalLoss_total","InternalLoss_sig","findG")
     final = final %>% mutate(hitsPerc = (Significant_Genes*100)/Total_Genes)
     Mesh_results_b[[i]] = final;names(Mesh_results_b)[i] = paste(TestingSubsetNames[i],"with",dim(final)[1],"enriched Mesh")
     # selection ends
@@ -549,8 +552,9 @@ MESH_Enrich = function(total_genes_all,
           length(TestingSubsetNames)," modules/subsets", 
           " at the significance level of ",Meshthres)
   message("Nice! - Mesh enrichment finished and data saved")}
-
 #####=============================================================#######
+
+
 
 #########################################################################################################################
 #Parse_Mesh_Results = function(Mesh_results_b){
