@@ -117,6 +117,7 @@ Keyword2 = c("Reactome_Enrich_Pregnancy_005_1011_lowest_path.xlsx",
              "Reactome_Enrich_Pregnancy_005_1011_all_path.xlsx",
              "Reactome_Enrich_Pregnancy_005_1011_all_react.xlsx")
 for ( i in seq_along(All_dataset)){
+  load(All_dataset[i])
   compile_select_index = c("ReactomeID","ReactomeTerm","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")
   ### group 1
   AR_CNTRL_enrich_KEGG = Parse_Results(Reactome_results_b[2]) 
