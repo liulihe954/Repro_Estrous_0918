@@ -5,6 +5,7 @@ source("Enrich_pipeline.R")
 #                            Join datatest and Compilation                            #
 #######################################################################################
 # main body of the function 
+TestingSubsetNames = names(total_genes_all)
 Interpro_Enrich_Results_thres005 = 
   InterPro_Enrich(total_genes_all,
                   sig_genes_all,

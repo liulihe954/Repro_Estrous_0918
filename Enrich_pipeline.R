@@ -38,6 +38,7 @@ for (i in seq_along(raw_data_all_index)){
   sig_genes_all[[i]] = dplyr::select(tmp2,gene)
   assign(data_all_index[i],tmp2)
 }
+
 #######################################################################################
 #                             2. Conversion to EntrezID                               #
 #######################################################################################

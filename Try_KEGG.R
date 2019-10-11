@@ -4,7 +4,7 @@ source("Enrich_pipeline.R")
 # input pre
 str(Sig_list_out_entrez)
 str(Total_list_out_entrez)
-TestingSubsetNames
+TestingSubsetNames = names(total_genes_all)
 #######################################################################################
 #                                   8.     kegg  Enrich                              #
 #######################################################################################
