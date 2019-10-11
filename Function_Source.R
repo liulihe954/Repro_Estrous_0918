@@ -460,7 +460,7 @@ MESH_Enrich = function(total_genes_all,
   #Total_list_out_entrez_test2
   # Get index
   genesMesh = unique(list_Bta$GENEID)
-  MeshID = unique(list_Bta$MESHID); MeshID = MeshID[1:200] # delete
+  MeshID = unique(list_Bta$MESHID)#; MeshID = MeshID[1:200] # delete
   MeshTerm = unique(list_Bta$MESHTERM)
   #head(unique(MeshID),200)
   #length(genesGO)
@@ -486,13 +486,12 @@ MESH_Enrich = function(total_genes_all,
                      findG =  character())
     message("Module size of ",TestingSubsetNames[i],": ", length(sig.genes))
     for(j in c(1:length(MeshID))){
-      if (j%%1000 == 0) {message("tryingd on MeshID ",j," - ",MeshID[j]," - ",MeshTerm[j])}
+      if (j%%500 == 0) {message("tryingd on MeshID ",j," - ",MeshID[j]," - ",MeshTerm[j])}
       target = MeshID[j]
       gENEs = unique(subset(list_Bta, MESHID == target)$GENEID)
       m = length(total.genes[total.genes %in% gENEs]) # genes from target  and in our dataset
       findG = sig.genes[sig.genes %in% gENEs]
       s = length(findG)
-      str(Sig_list_out)
       orig_list = data.frame(Sig_list_out[[i]]) %>% dplyr::filter(ENTREZID_final %in% findG)
       PastefindG = paste(orig_list[,1], collapse="/")
       M = matrix(c(s,S-s,m-s,N-m-S+s),byrow = 2, nrow = 2)

@@ -122,20 +122,19 @@ for (i in c(1:5)){
 save(Total_list_out,Sig_list_out,Sig_list_out_entrez,Total_list_out_entrez,file = "ConvertName2Entrez.RData")
 load("ConvertName2Entrez.RData")
 
-Sig_list_out_entrez
-Total_list_out_entrez
-TestingSubsetNames
-
-test = MESH_Enrich(total_genes_all,
+#####
+total_genes_all = Total_list_out_entrez
+sig_genes_all = Sig_list_out_entrez
+#TestingSubsetNames
+MESH_Enrichment_1010 = MESH_Enrich(total_genes_all,
                    sig_genes_all,
                    TestingSubsetNames,
                    Meshthres = 0.05,
                    Sig_list_out = Sig_list_out,
-                   MeshCate = c("D","G"),#biomart="ensembl",
+                   MeshCate = c("D","G"),
                    dataset="MeSH.Bta.eg.db",
-                   keyword = "MESH_Enrichment_local_test")
+                   keyword = "MESH_Enrichment_1010")
                        
-
 
 
 
