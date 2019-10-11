@@ -16,7 +16,7 @@ Match_List = dplyr::select(List, MESHID, MESHTERM)
 library(MeSH.Bta.eg.db)
 key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
 list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
-  dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY == c("D","G")) %>% 
+  dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY %in% c("D","G")) %>% 
   dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))
 save(KEY,List,Match_List,key_Bta,list_Bta,file = "MeshDB.RData")
 
