@@ -27,24 +27,24 @@ namespace_index = dplyr::filter(gene,go_id != "",namespace_1003 != "")
 compile_select_index = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")
 ### group 1
 #
-AR_CNTRL_enrich = Parse_GO_Results(GO_results_b[2])
+AR_CNTRL_enrich = Parse_Results(GO_results_b[2])
 names(AR_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 AR_CNTRL_enrich = dplyr::select(AR_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 #
-PRF_CNTRL_enrich = Parse_GO_Results(GO_results_b[3])
+PRF_CNTRL_enrich = Parse_Results(GO_results_b[3])
 names(PRF_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 PRF_CNTRL_enrich   = dplyr::select(PRF_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 ### group 2
 #
-FPM_CNTRL_enrich = Parse_GO_Results(GO_results_b[1])
+FPM_CNTRL_enrich = Parse_Results(GO_results_b[1])
 names(FPM_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 FPM_CNTRL_enrich = dplyr::select(FPM_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 #
-SMP_CNTRL_enrich= Parse_GO_Results(GO_results_b[4])
+SMP_CNTRL_enrich= Parse_Results(GO_results_b[4])
 names(SMP_CNTRL_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 SMP_CNTRL_enrich = dplyr::select(SMP_CNTRL_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 #
-SMP_FMP_enrich = Parse_GO_Results(GO_results_b[5])
+SMP_FMP_enrich = Parse_Results(GO_results_b[5])
 names(SMP_FMP_enrich) = c("go_id","GO_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 SMP_FMP_enrich =  dplyr::select(SMP_FMP_enrich,compile_select_index) %>% dplyr::inner_join(namespace_index,by = "go_id")
 
@@ -86,8 +86,8 @@ message(" BP: ",length(BP_List)," CC: ",length(CC_List)," MF: ",length(MF_List))
 
 # Function takes Enrichment table as imput (same format as "AR_CNTRL_enrich")
 #####
-# ReduceDim_GO_Plot(AR_CNTRL_enrich,GOthres = 0.001, Dataset_Name = "AR_CNTRL_enrich")
-# ReduceDim_GO_Plot(PRF_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "PRF_CNTRL_enrich")
-# ReduceDim_GO_Plot(FPM_CNTRL_enrich,GOthres = 0.01,Dataset_Name = "FPM_CNTRL_enrich")
-# ReduceDim_GO_Plot(SMP_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "SMP_CNTRL_enrich")
-# ReduceDim_GO_Plot(SMP_FMP_enrich,GOthres = 0.001,Dataset_Name = "SMP_FMP_enrich")
+ReduceDim_GO_Plot(AR_CNTRL_enrich,GOthres = 0.001, Dataset_Name = "AR_CNTRL_enrich")
+ReduceDim_GO_Plot(PRF_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "PRF_CNTRL_enrich")
+ReduceDim_GO_Plot(FPM_CNTRL_enrich,GOthres = 0.01,Dataset_Name = "FPM_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_CNTRL_enrich,GOthres = 0.001,Dataset_Name = "SMP_CNTRL_enrich")
+ReduceDim_GO_Plot(SMP_FMP_enrich,GOthres = 0.001,Dataset_Name = "SMP_FMP_enrich")
