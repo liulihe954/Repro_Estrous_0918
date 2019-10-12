@@ -19,7 +19,6 @@ Interpro_Enrich_Results_thres005 =
 
 ## load in the results just created. Tip: use the key word above
 load("Interpro_Enrichment_thres005_1011.RData")
-
 ########
 library(tidyverse)
 match_family = read.table("entry.list",sep = "\t",header = T)
@@ -31,29 +30,29 @@ match_family = as_tibble(match_family) %>% dplyr::select(ENTRY_AC,ENTRY_TYPE) %>
 # parse 1 by 1, and attach the space name in the end
 compile_select_index = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")
 ### group 1
-AR_CNTRL_enrich_IP = Parse_Interpro_Results(Interpro_results_b[2]) 
+AR_CNTRL_enrich_IP = Parse_Results(Interpro_results_b[2]) 
 names(AR_CNTRL_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 AR_CNTRL_enrich_IP = dplyr::select(AR_CNTRL_enrich_IP,compile_select_index)  #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 AR_CNTRL_enrich_IP = merge(AR_CNTRL_enrich_IP,match_family,by = "InterproID")
 
 #
-PRF_CNTRL_enrich_IP = Parse_Interpro_Results(Interpro_results_b[3])
+PRF_CNTRL_enrich_IP = Parse_Results(Interpro_results_b[3])
 names(PRF_CNTRL_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 PRF_CNTRL_enrich_IP  = dplyr::select(PRF_CNTRL_enrich_IP,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 PRF_CNTRL_enrich_IP = merge(PRF_CNTRL_enrich_IP,match_family,by = "InterproID")
 
 ### group 2
-FPM_CNTRL_enrich_IP = Parse_Interpro_Results(Interpro_results_b[1])
+FPM_CNTRL_enrich_IP = Parse_Results(Interpro_results_b[1])
 names(FPM_CNTRL_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 FPM_CNTRL_enrich_IP = merge(FPM_CNTRL_enrich_IP,match_family,by = "InterproID")
 #
-SMP_CNTRL_enrich_IP= Parse_Interpro_Results(Interpro_results_b[4])
+SMP_CNTRL_enrich_IP= Parse_Results(Interpro_results_b[4])
 names(SMP_CNTRL_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 SMP_CNTRL_enrich_IP = dplyr::select(SMP_CNTRL_enrich_IP,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 SMP_CNTRL_enrich_IP = merge(SMP_CNTRL_enrich_IP,match_family,by = "InterproID")
 
 #
-SMP_FMP_enrich_IP = Parse_Interpro_Results(Interpro_results_b[5])
+SMP_FMP_enrich_IP = Parse_Results(Interpro_results_b[5])
 names(SMP_FMP_enrich_IP) = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","ExternalLoss_total","InternalLoss_sig","findG","hitsPerc")
 SMP_FMP_enrich_IP =  dplyr::select(SMP_FMP_enrich_IP,compile_select_index) #%>% dplyr::left_join(match_family,by=c("InterproID" = "InterproID"))
 SMP_FMP_enrich_IP = merge(SMP_FMP_enrich_IP,match_family,by = "InterproID")
