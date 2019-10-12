@@ -111,7 +111,7 @@ load("ConvertName2Entrez.RData")
 
 # print out the converting details
 require(openxlsx)
-#write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
-#write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
+write.xlsx(Sig_list_out,file = "test_convert_sig.xlsx")
+write.xlsx(Total_list_out,file = "test_convert_total.xlsx")
 #########################################################################################################################
 
