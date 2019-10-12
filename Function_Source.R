@@ -223,7 +223,7 @@ ReduceDim_GO_Plot = function(Enrich_Out,
                     "CorMat_MF" = data.frame(goSimMatrix_MF))
   write.xlsx(CorMatrix, row.names=TRUE,
              file = paste("Semantic_Similarity_Measure_",
-                                     Dataset_Name,"_",
+                          Dataset_Name,"_",
                           formatC(GOthres, format = "e", digits = 0),".xlsx",sep = ""))
   save(goSimMatrix_CC,goSimMatrix_BP,goSimMatrix_MF,
        file = paste("Semantic_Similarity_Measure_",Dataset_Name,"_",formatC(GOthres, format = "e", digits = 0),".RData",sep = ""))
@@ -387,8 +387,8 @@ MESH_Enrich = function(total_genes_all,
     Match_List = dplyr::select(List, MESHID, MESHTERM)
     key_Bta <- keys(MeSH.Bta.eg.db, keytype = "MESHID")
     list_Bta = MeSHDbi::select(MeSH.Bta.eg.db, keys = key_Bta, columns = columns(MeSH.Bta.eg.db)[-4], keytype = "MESHID") %>% 
-       dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY %in% MeshCate) %>% 
-       dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))}
+      dplyr::select(GENEID,MESHCATEGORY,MESHID,SOURCEID) %>% dplyr::filter(MESHCATEGORY %in% MeshCate) %>% 
+      dplyr::left_join(Match_List,by= c("MESHID" = "MESHID"))}
   # 2. match from the very begining (will take an hour or so)
   #KEY = keys(MeSH.db, keytype = "MESHID")
   #List = select(MeSH.db, keys = KEY, columns = columns(MeSH.db), keytype = "MESHID")

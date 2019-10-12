@@ -26,6 +26,8 @@ match_family = read.table("entry.list",sep = "\t",header = T)
 match_family = as_tibble(match_family) %>% dplyr::select(ENTRY_AC,ENTRY_TYPE) %>% 
   rename(InterproID = ENTRY_AC,Type =ENTRY_TYPE)
 
+
+
 # parse 1 by 1, and attach the space name in the end
 compile_select_index = c("InterproID","Interpro_Name","Total_Genes","Significant_Genes","pvalue","findG","hitsPerc")
 ### group 1
