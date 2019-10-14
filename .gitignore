@@ -2,5 +2,6 @@
 !*.R
 !.gitignore
 !MeshDB.RData
+!data4test.csv
 .Rproj.user
 *.Rproj
