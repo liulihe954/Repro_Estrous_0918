@@ -3,20 +3,12 @@ library(readxl);library(ggplot2);library(biomaRt);library(tidyverse)
 library(biomaRt);library(GOSemSim);library(corrplot);library(limma)
 ##############################################################################################################
 Parse_Results = function(Results_List,keyword = "Which D.B"){
-  all_enrich = data.frame(ID=character(),
-                          Description=character(),
-                          Total_gene=numeric(),
-                          Significant_gene=numeric(),
-                          pvalue=numeric(),
-                          ExternalLoss_total = character(),
-                          InternalLoss_total = character(),
-                          HitPerc = numeric(),
-                          stringsAsFactors=FALSE)
+  all_enrich = data.frame()
   for (i in 1:length(Results_List)){
     len = dim(data.frame(Results_List[i]))[1]
     if (len> 0){
       tmp = data.frame(Results_List[i])
-      names(tmp) = names(all_enrich)
+      names(tmp) = names(Results_List[[1]])
       all_enrich = rbind(all_enrich,tmp)
     }
   }

@@ -23,19 +23,26 @@ dplyr::rename(EntrezID = V1,
               Species = V6)
 
 #head(NCBI2Reactome_all_path_bt,30)
-#rm(list = c("test1","test2","target","j","InputSource","ReactomeID"))
-#str(NCBI2Reactome_all_react_bt)
-#InputSource = NCBI2Reactome_all_react_bt
-#ReactomeID =  unique(InputSource[,2])
-#j = 24
-#ReactomeID[j] == "R-BTA-72127"
-#test1 = dplyr::filter(NCBI2Reactome_all_react_bt,ReactomeID == ReactomeID[j])
-#table(test1$ReactomeID == ReactomeID[j])
+rm(list = c("test1","test2","target","j","InputSource","ReactomeID"))
+NCBI2Reactome_all_react_bt = NCBI2Reactome_all_react_bt[1:1000,] %>% 
+  dplyr::select(EntrezID,ReactomeID,Species)
+write.csv(NCBI2Reactome_all_react_bt,file = "data4test.csv",row.names = F)
+
+
+
+rm(list = c("test1","test2","target","j","InputSource","ReactomeID"))
+library(data.table)
+InputSource <- data.frame(fread("https://raw.githubusercontent.com/liulihe954/Repro_Estrous_0918/master/data4test.csv"))
+str(InputSource)
 #
-#target = ReactomeID[j]
-#test2 = dplyr::filter(NCBI2Reactome_all_react_bt,ReactomeID == target)
-#table(test2$ReactomeID == ReactomeID[j])
-#test
+ReactomeID2 = unique(InputSource[,2])
+j = 24
+test1 = dplyr::filter(InputSource,ReactomeID == ReactomeID2[j])
+table(test1$ReactomeID == ReactomeID2[j])
+
+target = ReactomeID[j]
+test2 = dplyr::filter(InputSource,ReactomeID == target)
+table(test2$ReactomeID == ReactomeID[j])
 
 #head(NCBI2Reactome_all_path_bt)
 # all_react
@@ -63,8 +70,18 @@ Reactome_lowest_path <- fread('https://reactome.org/download/current/NCBI2Reacto
 Reactome_all_path <- fread('https://reactome.org/download/current/NCBI2Reactome_All_Levels.txt')
 Reactome_all_react <- fread('https://reactome.org/download/current/NCBI2ReactomeReactions.txt')
 
-
-
+NCBI2Reactome_all_path = read.csv("NCBI2Reactome_All_Levels.txt",sep = "\t",header = F)
+NCBI2Reactome_all_path_bt = 
+  dplyr::filter(NCBI2Reactome_all_path,V6 == "Bos taurus") %>% 
+  dplyr::select(V1,V2,V4,V5,V6) %>% 
+  dplyr::rename(EntrezID = V1,
+                ReactomeID = V2,
+                Reactome_Description = V4, 
+                Source = V5, 
+                Species = V6)
+InputSource = NCBI2Reactome_all_path_bt 
+ReactomeRecords = unique(InputSource[,c("ReactomeID","Reactome_Description")]) %>% arrange(ReactomeID)
+test = dplyr::select(InputSource,ReactomeID,Reactome_Description) %>% dplyr::arrange(ReactomeID) %>% distinct()
 #### run test
 str(Sig_list_out_entrez)
 str(Total_list_out_entrez)
